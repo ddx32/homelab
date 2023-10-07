@@ -1,0 +1,14 @@
+127.0.0.1		localhost
+
+# DNS entries for the local network
+192.168.0.1		mikrotik.cdg
+192.168.0.2		godfrey.cdg
+192.168.1.1		kryton.cdg
+192.168.3.1		kostirez.cdg
+192.168.3.2		nehtotrh.cdg
+192.168.3.3		bedrich.cdg
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters

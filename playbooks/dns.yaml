@@ -1,0 +1,35 @@
+---
+- name: Set up DNS client and server
+  hosts: "cdg"
+  become: yes
+  tasks:
+    - name: Install dnsmasq
+      apt:
+        name: dnsmasq
+        state: latest
+    - name: Configure dnsmasq
+      copy:
+        src: etc/dnsmasq.conf
+        dest: /etc/dnsmasq.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: Configure DNS client
+      copy:
+        src: etc/resolv.conf
+        dest: /etc/resolv.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: Add entries to /etc/hosts
+      copy:
+        src: etc/hosts
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: 0644
+    - name: Ensure dnsmasq service is running
+      service:
+        name: dnsmasq
+        state: started
+        enabled: yes
