@@ -28,8 +28,8 @@
         owner: root
         group: root
         mode: 0644
-    - name: Ensure dnsmasq service is running
+    - name: Ensure dnsmasq service is running fresh
       service:
         name: dnsmasq
-        state: started
+        state: restarted
         enabled: yes
