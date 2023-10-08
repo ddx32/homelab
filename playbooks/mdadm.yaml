@@ -1,0 +1,21 @@
+---
+- name: Ensure mdadm is configured
+  hosts: "cdg"
+  become: yes
+  tasks:
+    - name: Install mdadm
+      apt:
+        name: mdadm
+        state: latest
+    - name: Copy mdadm config
+      copy:
+        src: etc/mdadm.conf
+        dest: /etc/mdadm/mdadm.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: Ensure md array is present in fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "/dev/md0	/mnt/raid	ext4	defaults,auto,nofail"
+        state: present
