@@ -22,10 +22,20 @@ spec:
         volumeMounts:
         - mountPath: /downloads
           name: downloads
+        # - mountPath: /watch
+        #   name: watch
+        # - mountPath: /config
+        #   name: config
       volumes:
       - name: downloads
         hostPath:
           path: /mnt/ursula/transmission-downloads
+      # - name: watch
+      #   hostPath:
+      #     path: /mnt/ursula/transmission-watch
+      # - name: config
+      #   hostPath:
+      #     path: /mnt/ursula/transmission-config
 
 
 ---
