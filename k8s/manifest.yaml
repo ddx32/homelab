@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transmission
+  template:
+    metadata:
+      labels:
+        app: transmission
+    spec:
+      containers:
+      - image: linuxserver/transmission
+        imagePullPolicy: "Always"
+        name: transmission
+        ports:
+        - containerPort: 9091
+        - containerPort: 51413
+        volumeMounts:
+        - mountPath: /downloads
+          name: downloads
+      volumes:
+      - name: downloads
+        hostPath:
+          path: /mnt/ursula/transmission-downloads
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: transmission
+  name: transmission
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 9091
+  - name: data
+    port: 51413
+    targetPort: 51413
+  selector:
+    app: transmission
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: transmission
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: transmission.cdg
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: transmission
+            port:
+              number: 80

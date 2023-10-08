@@ -1,12 +1,15 @@
 127.0.0.1		localhost
 
-# DNS entries for the local network
+# DNS entries for the local network devices
 192.168.0.1		godfrey
 192.168.0.2		archibald
 192.168.1.1		kryton
 192.168.3.1		kostirez
 192.168.3.2		nehtotrh
 192.168.3.3		bedrich
+
+# Services on kryton
+192.168.1.1		transmission
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
