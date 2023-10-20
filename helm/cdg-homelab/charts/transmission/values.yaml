@@ -1,0 +1,10 @@
+image: linuxserver/transmission
+versionTag: "4.0.4"
+containerPorts:
+  - 9091
+  - 51413
+hostPaths:
+  downloads: /mnt/ursula/transmission-downloads
+  watch: /mnt/ursula/transmission-watch
+  config: /mnt/ursula/transmission-config
+replicas: 1
