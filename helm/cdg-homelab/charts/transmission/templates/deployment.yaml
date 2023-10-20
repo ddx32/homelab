@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transmission
+  template:
+    metadata:
+      labels:
+        app: transmission
+    spec:
+      containers:
+      - image: {{ .Values.image }}:{{ .Values.versionTag }}
+        imagePullPolicy: "Always"
+        name: transmission
+        ports:
+        {{- range .Values.containerPorts }}
+        - containerPort: {{ . }}
+        {{- end }}
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - mountPath: /downloads
+          name: downloads
+        - mountPath: /watch
+          name: watch
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: downloads
+        hostPath:
+          path: {{ .Values.hostPaths.downloads }}}
+      - name: watch
+        hostPath:
+          path: {{ .Values.hostPaths.watch }}}
+      - name: config
+        hostPath:
+          path: {{ .Values.hostPaths.config }}}
