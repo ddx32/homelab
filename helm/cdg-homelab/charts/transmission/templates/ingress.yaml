@@ -1,17 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: transmission
+  name: {{ .Chart.Name }}
 spec:
   ingressClassName: nginx
   rules:
-  - host: transmission.cdg.lan
+  - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /
+      - path: {{ .Values.ingress.path }}
         pathType: ImplementationSpecific
         backend:
           service:
-            name: transmission
+            name: {{ .Chart.Name }}
             port:
-              number: 80
+              number: {{ .Values.ingress.port }}

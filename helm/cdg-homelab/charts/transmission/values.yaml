@@ -1,8 +1,12 @@
 image: linuxserver/transmission
 versionTag: "4.0.4"
 containerPorts:
-  - 9091
-  - 51413
+  webInterface: 9091
+  incomingConnection: 51413
+ingress:
+  host: transmission.cdg.lan
+  port: 80
+  path: /
 hostPaths:
   downloads: /mnt/ursula/transmission-downloads
   watch: /mnt/ursula/transmission-watch
