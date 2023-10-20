@@ -17,10 +17,6 @@ metricsExporter:
   versionTag: "master"
   containerPorts:
     metrics: 19091
-  ingress:
-    host: transmission-exporter.cdg.lan
-    port: 19091
-    path: /
   environment:
     TRANSMISSION_ADDR: http://transmission.cdg.lan
     WEB_PATH: "/metrics"

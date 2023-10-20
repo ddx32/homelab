@@ -15,13 +15,3 @@ spec:
             name: {{ .Values.transmission.name }}
             port:
               number: {{ .Values.transmission.ingress.port }}
-  - host: {{ .Values.metricsExporter.ingress.host }}
-    http:
-      paths:
-      - path: {{ .Values.metricsExporter.ingress.path }}
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: {{ .Values.metricsExporter.name }}
-            port:
-              number: {{ .Values.metricsExporter.ingress.port }}
