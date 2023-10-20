@@ -9,3 +9,6 @@ dependencies:
   - name: nginx-ingress-controller
     version: 9.9.2
     repository: https://charts.bitnami.com/bitnami
+  - name: kube-prometheus-stack
+    version: 51.10.0
+    repository: https://prometheus-community.github.io/helm-charts

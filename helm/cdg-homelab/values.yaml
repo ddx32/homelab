@@ -1,0 +1,16 @@
+prometheus:
+  name: prometheus-operated
+  ingress:
+    host: prometheus.cdg.lan
+    path: /
+    port: 9090
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+grafana:
+  name: cdg-homelab-grafana
+  ingress:
+    host: grafana.cdg.lan
+    path: /
+    port: 80

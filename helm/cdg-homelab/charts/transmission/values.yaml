@@ -1,14 +1,36 @@
-image: linuxserver/transmission
-versionTag: "4.0.4"
-containerPorts:
-  webInterface: 9091
-  incomingConnection: 51413
-ingress:
-  host: transmission.cdg.lan
-  port: 80
-  path: /
+transmission:
+  name: transmission
+  image: linuxserver/transmission
+  versionTag: "4.0.4"
+  containerPorts:
+    webInterface: 9091
+    incomingConnection: 51413
+  ingress:
+    host: transmission.cdg.lan
+    port: 80
+    path: /
+  replicas: 1
+
+metricsExporter:
+  name: transmission-exporter
+  image: metalmatze/transmission-exporter
+  versionTag: "master"
+  containerPorts:
+    metrics: 19091
+  ingress:
+    host: transmission-exporter.cdg.lan
+    port: 19091
+    path: /
+  environment:
+    TRANSMISSION_ADDR: http://transmission.cdg.lan
+    WEB_PATH: "/metrics"
+    WEB_ADDR: ":19091"
+
 hostPaths:
   downloads: /mnt/ursula/transmission-downloads
   watch: /mnt/ursula/transmission-watch
   config: /mnt/ursula/transmission-config
-replicas: 1
+
+serviceMonitor:
+  name: transmission-service-monitor
+  jobLabel: transmission-service-monitor

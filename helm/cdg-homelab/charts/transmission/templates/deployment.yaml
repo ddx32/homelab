@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ .Values.transmission.name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: {{ .Values.transmission.name }}
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {{ .Values.transmission.name }}
     spec:
       containers:
-      - image: {{ .Values.image }}:{{ .Values.versionTag }}
+      - image: {{ .Values.transmission.image }}:{{ .Values.transmission.versionTag }}
         imagePullPolicy: "Always"
-        name: {{ .Chart.Name }}
+        name: {{ .Values.transmission.name }}
         ports:
-        - containerPort: {{ .Values.containerPorts.webInterface }}
-        - containerPort: {{ .Values.containerPorts.incomingConnection }}
+        - containerPort: {{ .Values.transmission.containerPorts.webInterface }}
+        - containerPort: {{ .Values.transmission.containerPorts.incomingConnection }}
         env:
         - name: PUID
           value: "1000"
@@ -31,13 +31,44 @@ spec:
           name: watch
         - mountPath: /config
           name: config
+      - image: {{ .Values.metricsExporter.image }}:{{ .Values.metricsExporter.versionTag }}
+        name: {{ .Values.metricsExporter.name }}
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        ports:
+        - name: prom-scrape
+          containerPort: {{ .Values.metricsExporter.containerPorts.metrics }}
+        env:
+        - name: TRANSMISSION_ADDR
+          value: {{ .Values.metricsExporter.environment.TRANSMISSION_ADDR }}
+        - name: WEB_PATH
+          value: {{ .Values.metricsExporter.environment.WEB_PATH }}
+        - name: WEB_ADDR
+          value: {{ .Values.metricsExporter.environment.WEB_ADDR }}
+        volumeMounts:
+        - mountPath: /etc/transmission-exporter
+          name: config
+      
       volumes:
       - name: downloads
-        hostPath:
-          path: {{ .Values.hostPaths.downloads }}
-      - name: watch
-        hostPath:
-          path: {{ .Values.hostPaths.watch }}
+        persistentVolumeClaim:
+          claimName: transmission-downloads
       - name: config
-        hostPath:
-          path: {{ .Values.hostPaths.config }}
+        persistentVolumeClaim:
+          claimName: transmission-config
+      volumes:
+      - name: downloads
+        persistentVolumeClaim:
+          claimName: downloads-pvc
+      - name: watch
+        persistentVolumeClaim:
+          claimName: watch-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: config-pvc
