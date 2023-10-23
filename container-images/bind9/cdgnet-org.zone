@@ -1,0 +1,24 @@
+$TTL 2d
+
+$ORIGIN cdgnet.org.
+
+@           IN        SOA     ns.cdgnet.org.  hello.cdgnet.org. (
+                              2023102300
+                              12h
+                              15m
+                              3w
+                              2h
+                              )
+            IN        NS      ns.cdgnet.org.
+
+; Network devices
+ns          IN        A       192.168.1.1
+godfrey     IN        A       192.168.0.1
+archibald   IN        A       192.168.0.2
+kryton      IN        A       192.168.1.1
+kostirez    IN        A       192.168.3.1
+nehtotrh    IN        A       192.168.3.2
+bedrich     IN        A       192.168.3.3
+
+; App server wildcard domain
+*.g         IN        A       192.168.1.1
