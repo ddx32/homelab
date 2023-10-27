@@ -21,15 +21,9 @@ spec:
           env:
 {{ .Values.env | toYaml | indent 10 }}
           volumeMounts:
-            - mountPath: /etc/bind/named.conf
+            - mountPath: /etc/bind
               name: config
-              subPath: named.conf
-            - mountPath: /etc/bind/cdgnet-org.zone
-              name: config
-              subPath: cdgnet-org.zone
       volumes:
         - name: config
           configMap:
             name: {{ .Release.Name }}-bind-configmap
-      securityContext:
-        fsGroup: 260
