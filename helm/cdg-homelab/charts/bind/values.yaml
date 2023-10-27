@@ -2,8 +2,8 @@ name: bind
 image: docker.io/ubuntu/bind9
 tag: 9.18-22.04_beta
 replicas: 1
-# port: 53
-port: 30053
+port: 53
+nodePort: 30053
 env:
   - name: TZ
     value: UTC

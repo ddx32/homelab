@@ -12,11 +12,9 @@ spec:
   ports:
     - name: dns-tcp
       port: {{ .Values.port }}
-      nodePort: {{ .Values.port }}
+      nodePort: {{ .Values.nodePort }}
       protocol: TCP
-      targetPort: 53
     - name: dns-udp
       port: {{ .Values.port }}
-      nodePort: {{ .Values.port }}
+      nodePort: {{ .Values.nodePort }}
       protocol: UDP
-      targetPort: 53
