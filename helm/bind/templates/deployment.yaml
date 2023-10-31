@@ -23,6 +23,13 @@ spec:
           volumeMounts:
             - mountPath: /etc/bind
               name: config
+          ports:
+            - name: namedtcp
+              containerPort: 53
+              protocol: TCP
+            - name: namedudp
+              containerPort: 53
+              protocol: UDP
       volumes:
         - name: config
           configMap:

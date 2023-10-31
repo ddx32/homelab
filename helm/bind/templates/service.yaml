@@ -8,13 +8,13 @@ metadata:
 spec:
   selector:
     app: {{ .Values.name }}
-  type: NodePort
+  type: LoadBalancer
   ports:
     - name: dns-tcp
       port: {{ .Values.port }}
-      nodePort: {{ .Values.nodePort }}
       protocol: TCP
+      targetPort: namedtcp
     - name: dns-udp
       port: {{ .Values.port }}
-      nodePort: {{ .Values.nodePort }}
       protocol: UDP
+      targetPort: namedudp
