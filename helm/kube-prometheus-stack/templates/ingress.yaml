@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: {{ .Values.prometheus.name }}
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt-production
 spec:
   ingressClassName: nginx
   rules:
