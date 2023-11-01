@@ -6,7 +6,7 @@ metadata:
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
-  name: apache
+  name: nginx-ingress-controller
   namespace: kube-system
 spec:
   repo: https://charts.bitnami.com/bitnami
