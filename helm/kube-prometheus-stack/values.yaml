@@ -1,7 +1,7 @@
 prometheus:
   name: prometheus-operated
   ingress:
-    host: prometheus.cdg.lan
+    host: prometheus.cdglan.org
     path: /
     port: 9090
   prometheusSpec:
@@ -11,6 +11,6 @@ prometheus:
 grafana:
   name: cdg-homelab-grafana
   ingress:
-    host: grafana.cdg.lan
+    host: grafana.cdglan.org
     path: /
     port: 80

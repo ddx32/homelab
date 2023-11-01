@@ -1,0 +1,10 @@
+cloudflareSecret:
+  name: cloudflare-api-token-secret
+  apiToken: {}
+
+acme:
+  staging:
+    name: letsencrypt-staging
+    email: f@filipruzicka.com
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    zone: cdglan.org

@@ -12,13 +12,17 @@ $ORIGIN cdglan.org.
             IN        NS      ns.cdglan.org.
 
 ; Network devices
-ns          IN        A       192.168.1.1
+ns          IN        A       192.168.10.2
 godfrey     IN        A       192.168.0.1
 archibald   IN        A       192.168.0.2
 kryton      IN        A       192.168.1.1
 kostirez    IN        A       192.168.3.1
 nehtotrh    IN        A       192.168.3.2
 bedrich     IN        A       192.168.3.3
+
+; Kubernetes services
+grafana     IN        A       192.168.10.2
+prometheus  IN        A       192.168.10.2
 
 ; App server wildcard domain
 *.g         IN        A       192.168.1.1

@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: le-test-cdglan-org
+spec:
+  secretName: le-test-cdglan-org
+  issuerRef:
+    name: {{ .Values.acme.staging.name }}
+    kind: ClusterIssuer
+  commonName: 'le-test.cdglan.org'
+  dnsNames:
+    - "le-test.cdglan.org"
