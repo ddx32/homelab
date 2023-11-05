@@ -21,6 +21,9 @@ spec:
           volumeMounts:
             - mountPath: /www/assets
               name: config
+          env:
+            - name: INIT_ASSETS
+              value: "0"
       volumes:
         - name: config
           configMap:
