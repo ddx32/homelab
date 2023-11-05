@@ -8,8 +8,10 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  hostPath:
-    path: {{ .Values.hostPaths.downloads }}
+  storageClassName: nfs
+  nfs:
+    path: {{ .Values.nfs.paths.downloads }}
+    server: {{ .Values.nfs.server }}
 
 ---
 
@@ -23,8 +25,10 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  hostPath:
-    path: {{ .Values.hostPaths.watch }}
+  storageClassName: nfs
+  nfs:
+    path: {{ .Values.nfs.paths.watch }}
+    server: {{ .Values.nfs.server }}
 
 ---
 
@@ -38,5 +42,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  hostPath:
-    path: {{ .Values.hostPaths.config }}
+  storageClassName: nfs
+  nfs:
+    path: {{ .Values.nfs.paths.config }}
+    server: {{ .Values.nfs.server }}

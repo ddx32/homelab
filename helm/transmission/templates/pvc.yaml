@@ -9,7 +9,7 @@ spec:
     requests:
       storage: 100Gi
   volumeName: downloads-pv
-  storageClassName: ""
+  storageClassName: nfs
 
 ---
 
@@ -24,7 +24,7 @@ spec:
     requests:
       storage: 100Gi
   volumeName: watch-pv
-  storageClassName: ""
+  storageClassName: nfs
 
 ---
 
@@ -39,4 +39,4 @@ spec:
     requests:
       storage: 100Gi
   volumeName: config-pv
-  storageClassName: ""
+  storageClassName: nfs

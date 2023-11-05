@@ -54,14 +54,7 @@ spec:
         volumeMounts:
         - mountPath: /etc/transmission-exporter
           name: config
-      
-      volumes:
-      - name: downloads
-        persistentVolumeClaim:
-          claimName: transmission-downloads
-      - name: config
-        persistentVolumeClaim:
-          claimName: transmission-config
+
       volumes:
       - name: downloads
         persistentVolumeClaim:

@@ -6,7 +6,7 @@ transmission:
     webInterface: 9091
     incomingConnection: 51413
   ingress:
-    host: transmission.cdg.lan
+    host: transmission.cdglan.org
     port: 80
     path: /
   replicas: 1
@@ -18,14 +18,16 @@ metricsExporter:
   containerPorts:
     metrics: 19091
   environment:
-    TRANSMISSION_ADDR: http://transmission.cdg.lan
+    TRANSMISSION_ADDR: https://transmission.cdglan.org
     WEB_PATH: "/metrics"
     WEB_ADDR: ":19091"
 
-hostPaths:
-  downloads: /mnt/ursula/transmission-downloads
-  watch: /mnt/ursula/transmission-watch
-  config: /mnt/ursula/transmission-config
+nfs:
+  server: ursula.cdglan.org
+  paths:
+    downloads: /export/transmission/downloads
+    watch: /export/transmission/watch
+    config: /export/transmission/config
 
 serviceMonitor:
   name: transmission-service-monitor
