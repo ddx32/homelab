@@ -26,6 +26,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: .container-images/homer/Dockerfile
+          file: ./container-images/homer/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/homer:latest
