@@ -1,0 +1,6 @@
+name: homer
+image:
+  name: pirateofthecerulean/homer
+  tag: latest
+port: 8080
+host: cdglan.org

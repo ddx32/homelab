@@ -24,6 +24,7 @@ bedrich     IN        A       192.168.3.3
 ursula      IN        A       192.168.10.1
 
 ; Kubernetes services
+@             IN      A       192.168.10.2 ; Homer
 grafana       IN      A       192.168.10.2
 prometheus    IN      A       192.168.10.2
 transmission  IN      A       192.168.10.2

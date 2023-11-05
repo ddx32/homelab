@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+binaryData:
+{{- range $path, $bytes := .Files.Glob (printf "config/**") }}
+{{ $name := base $path | indent 2}}
+{{- printf "%s" $name}}{{ print ": "}}{{ $.Files.Get $path | b64enc }}
+{{ end }}
