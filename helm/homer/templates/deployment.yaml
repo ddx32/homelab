@@ -18,13 +18,6 @@ spec:
           name: {{ .Values.name }}
           ports:
             - containerPort: {{ .Values.port }}
-          volumeMounts:
-            - mountPath: /www/assets
-              name: config
           env:
             - name: INIT_ASSETS
               value: "0"
-      volumes:
-        - name: config
-          configMap:
-            name: {{ .Release.Name }}-configmap
