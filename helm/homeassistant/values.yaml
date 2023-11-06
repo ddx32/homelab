@@ -1,0 +1,24 @@
+name: homeassistant
+image:
+  name: docker.io/homeassistant/home-assistant
+  tag: 2023.11
+port: 8123
+host: homeassistant.cdglan.org
+affinity:
+  nodeLabel: skyconnect-dongle
+  value: true
+storage:
+  name: ha-storage
+  server: ursula.cdglan.org
+  path: /export/homeassistant
+  mountPath: /config
+configFiles:
+  name: homeassistant-configs
+  files:
+  - name: configuration.yaml
+    mountPath: /config/configuration.yaml
+  - name: secrets.yaml
+    mountPath: /config/secrets.yaml
+usb:
+  devicePath: /dev/ttyUSB0
+  name: dongle
