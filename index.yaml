@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  homeassistant:
+  - apiVersion: v2
+    appVersion: "2024.1"
+    created: "2024-01-29T21:45:35.37340918Z"
+    description: Homeassistant install with plugins and extensions
+    digest: e5e43f39c6e4a7c64a0d18aff129959a092ee187b1b613977b46695eab3aaa1e
+    name: homeassistant
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/homeassistant-0.1.4/homeassistant-0.1.4.tgz
+    version: 0.1.4
+generated: "2024-01-29T21:45:35.373414941Z"
