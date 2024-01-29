@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  repo: https://prometheus-community.github.io/helm-charts
+  chart: kube-prometheus-stack
+  targetNamespace: monitoring
+  version: 13.11.0
+  valuesContent: |-
+    fullnameOverride: kube-prometheus-stack
+    prometheus:
+      ingress:
+        enabled: true
+        hosts:
+          - prometheus.cdglan.org
+        tls:
+          - secretName: prometheus-tls
+            hosts:
+              - prometheus.cdglan.org
+    grafana:
+      ingress:
+        enabled: true
+        hosts:
+          - grafana.cdglan.org
+        tls:
+          - secretName: grafana-tls
+            hosts:
+              - grafana.cdglan.org
+    alertmanager:
+      ingress:
+        enabled: true
+        hosts:
+          - alertmanager.cdglan.org
+        tls:
+          - secretName: alertmanager-tls
+            hosts:
+            - alertmanager.cdglan.org

@@ -1,3 +1,0 @@
-Welcome to the cdg homelab environment.
-
-The release has been deployed as {{ .Release.Name }}. Have fun!
