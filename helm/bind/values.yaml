@@ -3,6 +3,32 @@ image: docker.io/ubuntu/bind9
 tag: 9.18-22.04_beta
 replicas: 1
 port: 53
+acl: []
+options:
+  forwarders:
+    - 1.1.1.1
+    - 1.0.0.1
+  allowQuery: any
+  allowRecursion: any
+  allowQueryCache: any
+zones:
+  - name: example.org
+    file: example-org.zone
+    type: master
+    ttl: 2d
+    ns: ns.example.org
+    serial: "2023120501"
+    refresh: 2h
+    retry: 30m
+    expire: 2w
+    minimum: 1h
+    records:
+      - name: ns
+        type: A
+        value: 10.0.0.1
+      - name: example1
+        type: A
+        value: 10.0.0.2
 env:
   - name: TZ
     value: UTC

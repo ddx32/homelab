@@ -1,0 +1,18 @@
+{{- define "zonefile" }}
+$TTL {{ .ttl }}
+
+$ORIGIN {{ .name }}.
+
+@   IN  SOA  {{ .ns }}.  postmaster.{{ .name }}. (
+             {{ .serial }}
+             {{ .refresh }}
+             {{ .retry }}
+             {{ .expire }}
+             {{ .minimum }}
+             )
+    IN  NS   {{ .ns }}.
+
+{{ range .records }}
+{{- .name }}  IN  {{ .type }}  {{ .value }}
+{{ end }}
+{{- end }}

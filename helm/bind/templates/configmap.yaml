@@ -5,6 +5,8 @@ metadata:
   name: {{ .Release.Name }}-bind-configmap
 data:
   named.conf: |-
-{{ .Files.Get "conf/named.conf" | indent 4 }}
-  cdglan-org.zone: |-
-{{ .Files.Get "conf/cdglan-org.zone" | indent 4 }}
+{{ tpl (.Files.Get "conf/named.conf") . | indent 4 }}
+  {{- range .Values.zones }}
+  {{ .file }}: |-
+{{- include "zonefile" . | indent 4 }}
+  {{- end }}
