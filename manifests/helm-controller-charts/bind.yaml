@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-services
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: bind
+  namespace: homelab-services
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: bind
+  targetNamespace: homelab-services
+  version: 0.2.1
+  valuesContent: |-
+    replicas: 2
+    acl:
+      - name: internal
+        rules:
+          - 192.168.0.0/24
+          - 10.0.10.0/24
+          - 10.0.40.0/24
+    zones:
+      - name: cdglan.org
+        file: cdglan-org.zone
+        type: master
+        ttl: 2d
+        ns: ns.cdglan.org
+        serial: "2023120501"
+        refresh: 2h
+        retry: 30m
+        expire: 2w
+        minimum: 1h
+        records:
+          - name: ns
+            type: A
+            value: 10.0.40.102
+          - name: omv
+            type: A
+            value: 10.0.40.201
+          - name: homer
+            type: A
+            value: 10.0.40.102
+          - name: grafana
+            type: A
+            value: 10.0.40.102
+          - name: prometheus
+            type: A
+            value: 10.0.40.102
+          - name: homeassistant
+            type: A
+            value: 10.0.40.102
