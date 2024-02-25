@@ -2,4 +2,4 @@ apiVersion: v2
 name: bind
 description: BIND9 DNS server
 type: application
-version: 0.1.2
+version: 0.2.1
