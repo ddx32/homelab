@@ -2,3 +2,4 @@
 .vscode
 *.tgz
 secrets/
+.DS_Store
