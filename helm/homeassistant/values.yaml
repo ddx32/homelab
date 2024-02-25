@@ -1,9 +1,9 @@
 name: homeassistant
 image:
   name: docker.io/homeassistant/home-assistant
-  tag: 2024.1
+  tag: latest
 port: 8123
-host: homeassistant.cdglan.org
+host: homeassistant.example.org
 affinity:
   nodeLabel: skyconnect-dongle
   value: true
