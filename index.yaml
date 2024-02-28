@@ -1,5 +1,15 @@
 apiVersion: v1
 entries:
+  adminer:
+  - apiVersion: v2
+    created: "2024-02-28T19:44:28.076764481Z"
+    description: Adminer MySQL management tool
+    digest: 287173ff110f6497df644a319331b9dd400049d94ade61d3d2c5138336a6f1e3
+    name: adminer
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/adminer-0.1.0/adminer-0.1.0.tgz
+    version: 0.1.0
   bind:
   - apiVersion: v2
     created: "2024-02-25T19:47:10.303054124Z"
@@ -82,4 +92,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2024-02-25T20:52:53.601937237Z"
+generated: "2024-02-28T19:44:28.07688701Z"
