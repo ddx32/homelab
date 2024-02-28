@@ -40,6 +40,16 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/cert-manager-setup-0.1.2/cert-manager-setup-0.1.2.tgz
     version: 0.1.2
+  deluge:
+  - apiVersion: v2
+    created: "2024-02-28T20:47:40.626265182Z"
+    description: A lightweight, Free Software, cross-platform BitTorrent client
+    digest: 91370b643dad8c8aabd286ab3cbc04f5c77cd4cdf25bc2e930278eff52dc8cef
+    name: deluge
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/deluge-0.1.0/deluge-0.1.0.tgz
+    version: 0.1.0
   homeassistant:
   - apiVersion: v2
     appVersion: "2024.1"
@@ -92,4 +102,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2024-02-28T19:44:28.07688701Z"
+generated: "2024-02-28T20:47:40.626283987Z"
