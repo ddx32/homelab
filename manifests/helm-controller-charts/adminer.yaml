@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-services
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: adminer
+  namespace: homelab-services
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: adminer
+  targetNamespace: homelab-services
+  version: 0.1.0
+  valuesContent: |-
+    host: adminer.cdglan.org
+    image:
+      tag: 4.8.1

@@ -27,7 +27,7 @@ spec:
         type: master
         ttl: 2d
         ns: ns.cdglan.org
-        serial: "2023120501"
+        serial: "2023120502"
         refresh: 2h
         retry: 30m
         expire: 2w
@@ -49,5 +49,8 @@ spec:
             type: A
             value: 10.0.40.102
           - name: homeassistant
+            type: A
+            value: 10.0.40.102
+          - name: adminer
             type: A
             value: 10.0.40.102

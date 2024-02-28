@@ -1,0 +1,6 @@
+name: adminer
+port: 8080
+host: example.com
+image:
+  name: docker.io/adminer
+  tag: latest
