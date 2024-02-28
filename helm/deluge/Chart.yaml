@@ -1,0 +1,5 @@
+apiVersion: v2
+name: deluge
+description: A lightweight, Free Software, cross-platform BitTorrent client
+type: application
+version: 0.1.0

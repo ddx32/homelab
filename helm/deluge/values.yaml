@@ -1,0 +1,15 @@
+name: deluge
+image: docker.io/linuxserver/deluge
+version: latest
+nfs:
+  server: example.com
+  paths:
+    config: /path/to/config
+    downloads: /path/to/downloads
+ingress:
+  port: 80
+  path: /
+  host: deluge.example.com
+containerPorts:
+  webInterface: 8112
+  inboundTraffic: 6881
