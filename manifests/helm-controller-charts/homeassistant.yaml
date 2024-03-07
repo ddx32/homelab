@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homeassistant
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: homeassistant
+  namespace: homeassistant
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: homeassistant
+  targetNamespace: homeassistant
+  version: 0.1.7
+  valuesContent: |-
+    image:
+      tag: 2024.3
+    host: homeassistant.cdglan.org
+    storage:
+      server: omv.cdglan.org
+      name: ha-storage
+      path: /export/ssd-data/homeassistant
+      mountPath: /config

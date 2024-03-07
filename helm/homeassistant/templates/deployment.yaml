@@ -22,11 +22,6 @@ spec:
               name: {{ .Values.storage.name }}
             - mountPath: {{ .Values.usb.devicePath }}
               name: {{ .Values.usb.name }}
-            {{- range .Values.configFiles.files }}
-            - name: {{ $.Values.configFiles.name }}
-              subPath: {{ .name }}
-              mountPath: {{ .mountPath }}
-            {{- end }}
           securityContext:
             privileged: true
       volumes:
@@ -37,9 +32,6 @@ spec:
         - name: {{ .Values.usb.name }}
           hostPath:
             path: {{ .Values.usb.devicePath }}
-        - name: {{ .Values.configFiles.name }}
-          configMap:
-            name: {{ .Values.configFiles.name }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

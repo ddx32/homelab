@@ -9,16 +9,9 @@ affinity:
   value: true
 storage:
   name: ha-storage
-  server: ursula.cdglan.org
+  server: ha-storage.example.org
   path: /export/homeassistant
   mountPath: /config
-configFiles:
-  name: homeassistant-configs
-  files:
-  - name: configuration.yaml
-    mountPath: /config/configuration.yaml
-  - name: secrets.yaml
-    mountPath: /config/secrets.yaml
 usb:
   devicePath: /dev/ttyUSB0
   name: dongle
