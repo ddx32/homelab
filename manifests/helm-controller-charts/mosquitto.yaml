@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homeassistant
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mosquitto-data-pv
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  nfs:
+    path: /export/ssd-data/mosquitto/data
+    server: omv.cdglan.org
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: mosquitto
+  namespace: homeassistant
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: mosquitto
+  targetNamespace: homeassistant
+  version: 0.1.0
+  valuesContent: |-
+    imageTag: 2.0.18
+    passwd: "cdglan:$7$101$ZJR0/eCErwp+8MF8$EjB1E4xOhaBadjvKj3kcRhuhD+kOxH2rdrxTBwOlt7BQsYJrkRn0N1W0LIGgNhzFw2q15boS0PO/zfWNgjXTEw=="
