@@ -52,6 +52,15 @@ entries:
     version: 0.1.0
   homeassistant:
   - apiVersion: v2
+    created: "2024-03-07T00:08:14.47160741Z"
+    description: Homeassistant install with plugins and extensions
+    digest: 7705219cf1d7e22b7bb0f6b71bd8cc7307abfc8b4b2ca32a83a72795d45ce8cc
+    name: homeassistant
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/homeassistant-0.1.7/homeassistant-0.1.7.tgz
+    version: 0.1.7
+  - apiVersion: v2
     appVersion: "2024.1"
     created: "2024-02-25T20:52:53.60191203Z"
     description: Homeassistant install with plugins and extensions
@@ -102,4 +111,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2024-02-28T20:47:40.626283987Z"
+generated: "2024-03-07T00:08:14.471628819Z"
