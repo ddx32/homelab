@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-configmap
+data:
+  mosquitto.conf: |
+    persistence {{ .Values.config.persistence }}
+    persistence_location {{ .Values.config.persistenceLocation }}
+    {{- range .Values.ports }}
+    listener {{ .port }}
+    {{- end }}
+    log_dest {{ .Values.config.logDest }}
+    log_type {{ .Values.config.logType }}
+    connection_messages {{ .Values.config.connectionMessages }}
+    log_timestamp {{ .Values.config.logTimestamp }}
+    log_timestamp_format {{ .Values.config.logTimestampFormat }}
+    allow_anonymous {{ .Values.config.allowAnonymous }}
+    password_file {{ .Values.config.passwordFile }}
+  mosquitto_passwd: |
+    {{ .Values.passwd }}

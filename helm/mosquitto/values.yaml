@@ -1,0 +1,26 @@
+name: mosquitto
+config:
+  persistence: true
+  persistenceLocation: /mosquitto/data
+  logDest: stdout
+  logType: all
+  connectionMessages: true
+  logTimestamp: true
+  logTimestampFormat: "%Y-%m-%dT%H:%M:%S"
+  allowAnonymous: true
+  passwordFile: /mosquitto/config/mosquitto_passwd
+ports:
+  - name: mqtt
+    port: 1883
+    targetPort: 1883
+    protocol: TCP
+  - name: http
+    port: 9001
+    targetPort: 9001
+    protocol: TCP
+replicas: 1
+image: eclipse-mosquitto
+imageTag: latest
+storage: 100Gi
+storageClassName: nfs
+volumeName: mosquitto-data-pv
