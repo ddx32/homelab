@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-services
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: deluge
+  namespace: homelab-services
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: deluge
+  targetNamespace: homelab-services
+  version: 0.1.0
+  valuesContent: |-
+    version: 2.1.1
+    nfs:
+      server: omv.cdglan.org
+      paths:
+        config: /export/ssd-data/deluge/config
+        downloads: /export/downloads
+    ingress:
+      host: deluge.cdglan.org
