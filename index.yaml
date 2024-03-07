@@ -101,6 +101,16 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/homer-0.1.1/homer-0.1.1.tgz
     version: 0.1.1
+  mosquitto:
+  - apiVersion: v2
+    created: "2024-03-07T23:47:00.043665754Z"
+    description: Mosquitto MQTT broker
+    digest: c8e9ae236930a444cc21a29314018dd6a419c23b67d15205c8086330038c4b32
+    name: mosquitto
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/mosquitto-0.1.0/mosquitto-0.1.0.tgz
+    version: 0.1.0
   transmission:
   - apiVersion: v2
     created: "2024-01-29T21:52:21.642990359Z"
@@ -111,4 +121,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2024-03-07T00:08:14.471628819Z"
+generated: "2024-03-07T23:47:00.043689478Z"
