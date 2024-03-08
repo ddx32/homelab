@@ -50,6 +50,16 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/deluge-0.1.0/deluge-0.1.0.tgz
     version: 0.1.0
+  esphome:
+  - apiVersion: v2
+    created: "2024-03-08T11:41:28.104118666Z"
+    description: esphome chart
+    digest: 9afdbd59a2acf22aa835462231a226ec265b8c8f6af7ec512483912879657712
+    name: esphome
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/esphome-0.1.0/esphome-0.1.0.tgz
+    version: 0.1.0
   homeassistant:
   - apiVersion: v2
     created: "2024-03-07T00:08:14.47160741Z"
@@ -121,4 +131,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2024-03-07T23:47:00.043689478Z"
+generated: "2024-03-08T11:41:28.104130458Z"
