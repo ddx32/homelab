@@ -27,7 +27,7 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: esphome
   targetNamespace: homeassistant
-  version: 0.1.0
+  version: 0.1.1
   valuesContent: |-
     imageTag: 2024.2.2
     host: esphome.cdglan.org
