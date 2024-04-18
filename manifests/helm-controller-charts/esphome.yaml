@@ -7,6 +7,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: esphome-config-pv
+  namespace: homeassistant
 spec:
   capacity:
     storage: 100Gi

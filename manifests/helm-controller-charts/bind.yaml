@@ -60,3 +60,6 @@ spec:
           - name: esphome
             type: A
             value: 10.0.40.102
+          - name: homebridge
+            type: A
+            value: 10.0.40.102
