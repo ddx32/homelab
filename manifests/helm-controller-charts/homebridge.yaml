@@ -12,6 +12,7 @@ spec:
   capacity:
     storage: 1Gi
   volumeMode: Filesystem
+  storageClassName: nfs
   accessModes:
     - ReadWriteOnce
   nfs:
@@ -27,7 +28,7 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: homebridge
   targetNamespace: homeassistant
-  version: 0.1.0
+  version: 0.1.2
   valuesContent: |-
     image:
       tag: 2024-01-08
