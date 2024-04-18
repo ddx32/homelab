@@ -22,9 +22,9 @@ spec:
           ports:
             - containerPort: {{ .Values.port }}
           volumeMounts:
-            - name: {{ .Values.name }}-volumeMount
+            - name: {{ .Values.name }}-volume-mount
               mountPath: /homebridge
       volumes:
-        - name: {{ .Values.name }}-volumeMount
+        - name: {{ .Values.name }}-volume-mount
           persistentVolumeClaim:
             claimName: {{ .Values.name }}-pvc
