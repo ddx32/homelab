@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-deployment
+  labels:
+    app: {{ .Values.name }}
+spec:
+  replicas: 1
+  selector:
+      matchLabels:
+        app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: {{ .Values.name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: {{ .Values.port }}
+          volumeMounts:
+            - name: {{ .Values.name }}-volumeMount
+              mountPath: /homebridge
+      volumes:
+        - name: {{ .Values.name }}-volumeMount
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}-pvc

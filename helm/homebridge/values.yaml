@@ -1,0 +1,16 @@
+name: homebridge
+image:
+  repository: homebridge/homebridge
+  tag: latest
+  pullPolicy: IfNotPresent
+port: 8581
+env:
+  TZ: Europe/Prague
+storage: 1Gi
+storageClassName: nfs
+volumeName: homebridge-config
+ingress:
+  ingressClassName: nginx
+  hosts: []
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
