@@ -2,4 +2,4 @@ apiVersion: v2
 name: homeassistant
 description: Homeassistant install with plugins and extensions
 type: application
-version: 0.1.8
+version: 0.1.9
