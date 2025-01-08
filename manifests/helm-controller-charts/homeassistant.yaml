@@ -12,10 +12,10 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: homeassistant
   targetNamespace: homeassistant
-  version: 0.1.8
+  version: 0.1.9
   valuesContent: |-
     image:
-      tag: 2024.3
+      tag: 2025.1
     host: homeassistant.cdglan.org
     storage:
       server: omv.cdglan.org
