@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Clean Docker cache
+        run: docker system prune -a -f
+      -
         name: Checkout
         uses: actions/checkout@v4
       -
