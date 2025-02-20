@@ -52,6 +52,15 @@ entries:
     version: 0.1.0
   esphome:
   - apiVersion: v2
+    created: "2025-02-20T12:06:08.651558836Z"
+    description: esphome chart
+    digest: 553aee1373fa4b4ad8278c660c93065081fd7ecebd191158fb65d80598455966
+    name: esphome
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/esphome-0.1.2/esphome-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2024-03-10T13:45:31.045528616Z"
     description: esphome chart
     digest: 41ed233759ec5519a2db824c26ba30816273f28c54b3a5ee1dde3623679d69d3
@@ -186,4 +195,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2025-01-08T16:52:49.694773773Z"
+generated: "2025-02-20T12:06:08.651585266Z"
