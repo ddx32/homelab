@@ -28,8 +28,8 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: esphome
   targetNamespace: homeassistant
-  version: 0.1.1
+  version: 0.1.2
   valuesContent: |-
-    imageTag: 2024.2.2
+    imageTag: 2025.2
     host: esphome.cdglan.org
     volumeName: esphome-config-pv
