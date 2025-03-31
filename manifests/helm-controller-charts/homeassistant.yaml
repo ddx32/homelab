@@ -15,7 +15,7 @@ spec:
   version: 0.1.9
   valuesContent: |-
     image:
-      tag: 2025.2
+      tag: 2025.3
     host: homeassistant.cdglan.org
     storage:
       server: omv.cdglan.org
