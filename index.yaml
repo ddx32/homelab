@@ -138,6 +138,15 @@ entries:
     version: 0.1.4
   homebridge:
   - apiVersion: v2
+    created: "2025-04-22T07:56:07.126172391Z"
+    description: HomeKit support for the impatient
+    digest: 9a000632097ed381e1de6e531c7d6c1bde96f85d538859fd576b26c381cb327d
+    name: homebridge
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/homebridge-0.2.0/homebridge-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     created: "2024-04-18T12:30:37.888820378Z"
     description: HomeKit support for the impatient
     digest: 91b5c4c06586a7814a0f784cc4b57d515bd3ce326cd5fbca9c69510553ee9ca1
@@ -195,4 +204,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2025-02-20T12:06:08.651585266Z"
+generated: "2025-04-22T07:56:07.12625198Z"
