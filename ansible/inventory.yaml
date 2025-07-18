@@ -1,0 +1,37 @@
+jehlinet_hosts:
+  hosts:
+    # PVE host (HP mini PC)
+    pve:
+      ansible_host: 10.0.10.4
+    # Holly PVE host (NAS)
+    holly:
+      ansible_host: 10.0.10.5
+    # Frigate on Raspberry Pi 4
+    overwatcher:
+      ansible_host: 10.0.10.128
+  vars:
+    ansible_user: jsolon
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+jehlinet_vms:
+  hosts:
+    librarian:
+      ansible_host: 10.0.40.100
+    omv:
+      ansible_host: 10.0.40.201
+    kube-captain:
+      ansible_host: 10.0.40.102
+  vars:
+    ansible_user: jsolon
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+alpine_hosts:
+  hosts:
+    # VM that runs avahi-reflect
+    reflector:
+      ansible_host: 10.0.10.165
+  vars:
+    ansible_user: root
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_become: false

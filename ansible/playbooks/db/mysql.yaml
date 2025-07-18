@@ -1,0 +1,14 @@
+- name: Install MySQL
+  hosts: librarian
+  become: true
+  tasks:
+    - name: Install MariaDB
+      ansible.builtin.apt:
+        name: mariadb-server
+        state: present
+        update_cache: yes
+    - name: Install Adminer
+      ansible.builtin.apt:
+        name: adminer
+        state: present
+        update_cache: yes

@@ -1,0 +1,13 @@
+- name: Install InfluxDB
+  hosts: librarian
+  become: true
+  tasks:
+    - name: Install InfluxDB
+      ansible.builtin.apt:
+        name: influxdb
+        state: present
+        update_cache: yes
+    - name: Install InfluxDB Service
+      ansible.builtin.systemd:
+        name: influxdb
+        state: started

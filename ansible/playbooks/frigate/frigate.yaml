@@ -1,0 +1,106 @@
+- name: Install Docker
+  hosts: overwatcher
+  become: true
+  tasks:
+    - name: Install required system packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Add Docker GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=arm64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker CE
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Enable and start Docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: yes
+    
+    - name: Add jsolon to docker group
+      ansible.builtin.user:
+        name: jsolon
+        groups: docker
+        append: yes
+
+- name: Create Frigate config directory
+  hosts: overwatcher
+  become: true
+  tasks:
+    - name: Create /etc/frigate-config directory
+      ansible.builtin.file:
+        path: /etc/frigate-config
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+- name: Setup NFS mount for Frigate storage and config
+  hosts: overwatcher
+  become: true
+  tasks:
+    - name: Install NFS client packages
+      ansible.builtin.apt:
+        name:
+          - nfs-common
+        state: present
+
+    - name: Mount storage NFS share
+      ansible.builtin.mount:
+        path: /mnt/frigate-storage
+        src: omv.cdglan.org:/frigate-storage
+        fstype: nfs
+        opts: rw,sync,nolock
+        state: mounted
+    
+    - name: Mount config NFS share
+      ansible.builtin.mount:
+        path: /mnt/frigate-config
+        src: omv.cdglan.org:/frigate-config
+        fstype: nfs
+        opts: rw,sync,nolock
+        state: mounted
+
+- name: Copy Frigate docker-compose.yaml
+  hosts: overwatcher
+  become: true
+  tasks:
+    - name: Copy docker-compose.yaml
+      ansible.builtin.copy:
+        src: frigate/docker-compose.yaml
+        dest: /mnt/frigate-config/docker-compose.yaml
+
+- name: Run Frigate containers
+  hosts: overwatcher
+  become: true
+  tasks:
+    - name: Run docker compose
+      community.docker.docker_compose_v2:
+        project_src: /mnt/frigate-config
+        files:
+          - docker-compose.yaml
+        state: present
+        pull: always
+        remove_orphans: yes

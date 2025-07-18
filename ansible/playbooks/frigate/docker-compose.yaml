@@ -1,0 +1,27 @@
+services:
+  frigate:
+    container_name: frigate
+    privileged: true # this may not be necessary for all setups
+    restart: unless-stopped
+    stop_grace_period: 30s # allow enough time to shut down the various services
+    image: ghcr.io/blakeblackshear/frigate:stable-rk
+    shm_size: "512mb" # update for your cameras based on calculation above
+    devices:
+      - /dev/video11:/dev/video11 # For Raspberry Pi 4B
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /mnt/frigate-config:/config
+      - /mnt/frigate-storage:/media/frigate
+      - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "8971:8971"
+      # - "5000:5000" # Internal unauthenticated access. Expose carefully.
+      - "8554:8554" # RTSP feeds
+      - "8555:8555/tcp" # WebRTC over tcp
+      - "8555:8555/udp" # WebRTC over udp
+    environment:
+      FRIGATE_RTSP_PASSWORD: "password"
+      HA_TOKEN: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI2ZGQ1ZDJmOGY3YTM0ZjEyYjM1ZjVjNzhiZGI5MTRmMiIsImlhdCI6MTc0Mzg0NTMxMCwiZXhwIjoyMDU5MjA1MzEwfQ.ARpkKg0Rsd-69tUayhCCQQnR9bqLGBwfuy9rMd8yTqA"
