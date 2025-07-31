@@ -3,6 +3,7 @@ image: docker.io/esphome/esphome
 imageTag: latest
 host: esphome.example.org
 port: 6052
+ingressClassName: nginx
 replicas: 1
 storage: 100Gi
 storageClassName: nfs
