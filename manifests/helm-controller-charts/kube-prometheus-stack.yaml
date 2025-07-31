@@ -12,9 +12,10 @@ spec:
   repo: https://prometheus-community.github.io/helm-charts
   chart: kube-prometheus-stack
   targetNamespace: monitoring
-  version: 56.2.1
+  version: 72.4.0
   valuesContent: |-
     fullnameOverride: kube-prometheus-stack
+    namespaceOverride: monitoring
     prometheus:
       ingress:
         enabled: true

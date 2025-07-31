@@ -28,8 +28,9 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: esphome
   targetNamespace: homeassistant
-  version: 0.1.2
+  version: 0.1.3
   valuesContent: |-
-    imageTag: 2025.2
-    host: esphome.cdglan.org
+    imageTag: 2025.7
+    host: esphome.jehli.net
+    ingressClassName: cloudflare-tunnel
     volumeName: esphome-config-pv

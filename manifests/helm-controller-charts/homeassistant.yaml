@@ -12,11 +12,12 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: homeassistant
   targetNamespace: homeassistant
-  version: 0.1.9
+  version: 0.1.11
   valuesContent: |-
     image:
       tag: 2025.7
-    host: homeassistant.cdglan.org
+    host: ha.jehli.net
+    ingressClassName: cloudflare-tunnel
     storage:
       server: omv.cdglan.org
       name: ha-storage
