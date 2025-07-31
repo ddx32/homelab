@@ -5,6 +5,7 @@ image:
 port: 8123
 host: homeassistant.example.org
 ingressClassName: nginx
+ingressAnnotations: {}
 affinity:
   nodeLabel: skyconnect-dongle
   value: true

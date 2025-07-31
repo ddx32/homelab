@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: {{ .Values.name }}-ingress
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-production
+    {{- toYaml .Values.ingressAnnotations | nindent 4 }}
 spec:
   ingressClassName: {{ .Values.ingressClassName }}
   rules:
