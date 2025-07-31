@@ -4,6 +4,7 @@ image:
   tag: latest
 port: 8123
 host: homeassistant.example.org
+ingressClassName: nginx
 affinity:
   nodeLabel: skyconnect-dongle
   value: true
