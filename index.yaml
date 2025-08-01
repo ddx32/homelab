@@ -51,6 +51,15 @@ entries:
     version: 0.1.2
   deluge:
   - apiVersion: v2
+    created: "2025-08-01T08:48:52.822637505Z"
+    description: A lightweight, Free Software, cross-platform BitTorrent client
+    digest: c55acc748f0b0e5a92d5bd3b688f7ad8bd66e23236fff938072c3d843125e94d
+    name: deluge
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/deluge-0.1.1/deluge-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     created: "2024-02-28T20:47:40.626265182Z"
     description: A lightweight, Free Software, cross-platform BitTorrent client
     digest: 91370b643dad8c8aabd286ab3cbc04f5c77cd4cdf25bc2e930278eff52dc8cef
@@ -249,4 +258,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2025-08-01T08:33:16.79786008Z"
+generated: "2025-08-01T08:48:52.822663866Z"
