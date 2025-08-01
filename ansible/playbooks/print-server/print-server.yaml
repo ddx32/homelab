@@ -1,0 +1,56 @@
+# Simple print server for Epson L3150 on RPi Zero
+
+- name: Simple print server setup
+  hosts: printer-buddy
+  become: true
+  vars:
+    printer_name: "Epson_L3150"
+    printer_description: "Epson L3150 All-in-One Printer"
+
+  tasks:
+    - name: Install essential packages
+      ansible.builtin.apt:
+        name:
+          - avahi-daemon
+          - avahi-utils
+          - cups
+          - cups-client
+          - libcupsimage2
+          - printer-driver-escpr
+          - usbutils
+        state: present
+        update_cache: yes
+
+    - name: Add user to printer group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: lpadmin
+        append: yes
+
+    - name: Copy CUPS configuration file
+      ansible.builtin.copy:
+        src: files/cupsd.conf
+        dest: /etc/cups/cupsd.conf
+        backup: yes
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart cups
+
+    - name: Try to start CUPS
+      ansible.builtin.systemd:
+        name: cups
+        enabled: yes
+        state: started
+
+    - name: Enable and start avahi-daemon
+      ansible.builtin.systemd:
+        name: avahi-daemon
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: restart cups
+      ansible.builtin.systemd:
+        name: cups
+        state: restarted

@@ -1,14 +1,13 @@
 jehlinet_hosts:
   hosts:
-    # PVE host (HP mini PC)
-    pve:
+    pve: # PVE host (HP mini PC)
       ansible_host: 10.0.10.4
-    # Holly PVE host (NAS)
-    holly:
+    holly: # Holly PVE host (NAS)
       ansible_host: 10.0.10.5
-    # Frigate on Raspberry Pi 4
-    overwatcher:
+    overwatcher: # Frigate on Raspberry Pi 4
       ansible_host: 10.0.10.128
+    printer-buddy: # RPi Zero W as a print/scanner server
+      ansible_host: 10.0.20.230
   vars:
     ansible_user: jsolon
     ansible_ssh_private_key_file: ~/.ssh/id_rsa

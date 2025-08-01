@@ -1,0 +1,149 @@
+# SANE Network Scanner Setup for Epson L3150
+
+- name: SANE Network Scanner Setup
+  hosts: printer-buddy
+  become: true
+  vars:
+    scanner_name: "Epson_L3150_Scanner"
+    scanner_description: "Epson L3150 Network Scanner"
+
+  tasks:
+    - name: Install SANE packages
+      ansible.builtin.apt:
+        name:
+          - sane
+          - sane-utils
+          - libsane-extras
+          - libsane-hpaio
+          - libsane-common
+          - libsane1
+          - usbutils
+        state: present
+        update_cache: yes
+
+    - name: Create scanner group if it doesn't exist
+      ansible.builtin.group:
+        name: scanner
+        state: present
+
+    - name: Add user to scanner group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: scanner
+        append: yes
+
+    - name: Create saned user if it doesn't exist
+      ansible.builtin.user:
+        name: saned
+        system: yes
+        shell: /bin/false
+        home: /var/lib/saned
+        groups: scanner
+
+    - name: Create saned home directory
+      ansible.builtin.file:
+        path: /var/lib/saned
+        state: directory
+        owner: saned
+        group: scanner
+        mode: "0755"
+
+    - name: Create SANE daemon configuration
+      ansible.builtin.copy:
+        dest: /etc/default/saned
+        content: |
+          # Defaults for saned initscript, from sane-utils
+
+          # Set to yes to start saned
+          RUN=yes
+
+          # Set to the user saned should run as
+          RUN_AS_USER=saned
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart saned
+
+    - name: Create saned.conf for network access
+      ansible.builtin.copy:
+        dest: /etc/sane.d/saned.conf
+        content: |
+          # saned.conf
+          # Configuration file for the saned daemon
+
+          # Allow connections from localhost and local network
+          localhost
+          192.168.1.0/24
+          10.0.0.0/8
+          172.16.0.0/12
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart saned
+
+    - name: Create saned systemd service override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/saned.socket.d
+        state: directory
+        mode: "0755"
+
+    - name: Create saned socket override configuration
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/saned.socket.d/override.conf
+        content: |
+          [Socket]
+          ListenStream=6566
+          ListenStream=0.0.0.0:6566
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart saned
+
+    - name: Create udev rules for scanner access
+      ansible.builtin.copy:
+        dest: /etc/udev/rules.d/99-scanner.rules
+        content: |
+          # Scanner udev rules
+          # Allow scanner group access to USB scanners
+          SUBSYSTEM=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="*", MODE="0666", GROUP="scanner"
+          SUBSYSTEM=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="*", RUN+="/usr/bin/setfacl -m g:scanner:rw $env{DEVNAME}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Enable and start saned
+      ansible.builtin.systemd:
+        name: saned
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    - name: Reload udev rules
+      ansible.builtin.command: udevadm control --reload-rules
+      changed_when: false
+
+    - name: Test scanner detection
+      ansible.builtin.command: scanimage -L
+      register: scanner_test
+      changed_when: false
+      failed_when: false
+
+    - name: Display scanner test results
+      ansible.builtin.debug:
+        var: scanner_test.stdout_lines
+
+    - name: Check SANE daemon status
+      ansible.builtin.systemd:
+        name: saned
+      register: saned_status
+
+    - name: Display SANE daemon status
+      ansible.builtin.debug:
+        var: saned_status
+
+  handlers:
+    - name: restart saned
+      ansible.builtin.systemd:
+        name: saned
+        state: restarted
+        daemon_reload: yes
