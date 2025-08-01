@@ -10,6 +10,7 @@ ingress:
   port: 80
   path: /
   host: deluge.example.com
+ingressClassName: nginx
 containerPorts:
   webInterface: 8112
   inboundTraffic: 6881
