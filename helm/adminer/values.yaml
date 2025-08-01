@@ -1,6 +1,7 @@
 name: adminer
 port: 8080
 host: example.com
+ingressClassName: nginx
 image:
   name: docker.io/adminer
   tag: latest
