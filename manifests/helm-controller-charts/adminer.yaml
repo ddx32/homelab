@@ -12,8 +12,9 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: adminer
   targetNamespace: homelab-services
-  version: 0.1.0
+  version: 0.1.1
   valuesContent: |-
-    host: adminer.cdglan.org
+    host: adminer.jehli.net
+    ingressClassName: cloudflare-tunnel
     image:
-      tag: 4.8.1
+      tag: 5.3.0

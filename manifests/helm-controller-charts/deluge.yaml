@@ -12,13 +12,14 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: deluge
   targetNamespace: homelab-services
-  version: 0.1.0
+  version: 0.1.1
   valuesContent: |-
-    version: 2.1.1
+    version: 2.2.0
     nfs:
       server: omv.cdglan.org
       paths:
         config: /export/ssd-data/deluge/config
         downloads: /export/downloads
     ingress:
-      host: deluge.cdglan.org
+      host: deluge.jehli.net
+    ingressClassName: cloudflare-tunnel
