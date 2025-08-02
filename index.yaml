@@ -248,6 +248,17 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/mosquitto-0.1.0/mosquitto-0.1.0.tgz
     version: 0.1.0
+  nginx-proxy:
+  - apiVersion: v2
+    appVersion: 1.25.0
+    created: "2025-08-02T09:09:02.51910459Z"
+    description: A Helm chart for nginx reverse proxies to local network devices
+    digest: 52fbc80474b23b61eca7cb3961cc9d207d8e827c0ee115b8601d40d3e033fff9
+    name: nginx-proxy
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/nginx-proxy-0.1.0/nginx-proxy-0.1.0.tgz
+    version: 0.1.0
   transmission:
   - apiVersion: v2
     created: "2024-01-29T21:52:21.642990359Z"
@@ -258,4 +269,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2025-08-01T08:48:52.822663866Z"
+generated: "2025-08-02T09:09:02.519148241Z"
