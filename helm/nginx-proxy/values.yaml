@@ -2,7 +2,6 @@ nginx:
   name: nginx-proxy
   image: nginx
   versionTag: "1.25.0-alpine"
-  containerPort: 80
 
 # Configuration for proxy targets
 # Each target represents a local network device to proxy to
@@ -16,7 +15,7 @@ targets:
     ingress:
       host: router.example.com
       path: /
-      port: 80
+      port: 8080
 
   # Example: Network storage device
   - name: nas-proxy
@@ -27,7 +26,7 @@ targets:
     ingress:
       host: nas.example.com
       path: /
-      port: 80
+      port: 8081
 
   # Example: IP Camera
   - name: camera-proxy
@@ -38,7 +37,7 @@ targets:
     ingress:
       host: camera.example.com
       path: /
-      port: 80
+      port: 8082
 
 # Global settings
 global:

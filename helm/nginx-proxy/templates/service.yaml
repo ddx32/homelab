@@ -12,7 +12,7 @@ spec:
   ports:
   - name: http
     port: {{ $target.ingress.port }}
-    targetPort: {{ $.Values.nginx.containerPort }}
+    targetPort: {{ $target.ingress.port }}
   selector:
     app: {{ $target.name }}
 {{- end }}

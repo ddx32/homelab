@@ -11,7 +11,7 @@ metadata:
 data:
   default.conf: |
     server {
-        listen 80;
+        listen {{ $target.ingress.port }};
         server_name _;
 
         # Security headers
