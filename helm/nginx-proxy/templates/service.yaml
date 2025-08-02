@@ -1,0 +1,19 @@
+{{- range $target := .Values.targets }}
+{{- if $target.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $target.name }}
+  labels:
+    app: {{ $target.name }}
+    proxy-target: {{ $target.name }}
+spec:
+  ports:
+  - name: http
+    port: {{ $target.ingress.port }}
+    targetPort: {{ $.Values.nginx.containerPort }}
+  selector:
+    app: {{ $target.name }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,46 @@
+nginx:
+  name: nginx-proxy
+  image: nginx
+  versionTag: "1.25.0-alpine"
+  containerPort: 80
+
+# Configuration for proxy targets
+# Each target represents a local network device to proxy to
+targets:
+  # Example: Router admin interface
+  - name: router-proxy
+    enabled: true
+    host: 192.168.1.1
+    port: 80
+    path: /
+    ingress:
+      host: router.example.com
+      path: /
+      port: 80
+
+  # Example: Network storage device
+  - name: nas-proxy
+    enabled: true
+    host: 192.168.1.100
+    port: 5000
+    path: /
+    ingress:
+      host: nas.example.com
+      path: /
+      port: 80
+
+  # Example: IP Camera
+  - name: camera-proxy
+    enabled: false
+    host: 192.168.1.50
+    port: 8080
+    path: /
+    ingress:
+      host: camera.example.com
+      path: /
+      port: 80
+
+# Global settings
+global:
+  # Default ingress class
+  ingressClassName: cloudflare-tunnel

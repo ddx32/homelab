@@ -1,0 +1,55 @@
+{{- range $target := .Values.targets }}
+{{- if $target.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $target.name }}
+  labels:
+    app: {{ $target.name }}
+    proxy-target: {{ $target.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $target.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $target.name }}
+        proxy-target: {{ $target.name }}
+    spec:
+      hostNetwork: true
+      containers:
+      - name: nginx
+        image: {{ $.Values.nginx.image }}:{{ $.Values.nginx.versionTag }}
+        ports:
+        - containerPort: {{ $.Values.nginx.containerPort }}
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ $.Values.nginx.containerPort }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ $.Values.nginx.containerPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: {{ $target.name }}-config
+{{- end }}
+{{- end }}
