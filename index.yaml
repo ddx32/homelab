@@ -251,6 +251,16 @@ entries:
   nginx-proxy:
   - apiVersion: v2
     appVersion: 1.25.0
+    created: "2025-08-02T09:56:52.767117917Z"
+    description: A Helm chart for nginx reverse proxies to local network devices
+    digest: 817532593c60ce0540e1041d77b7610ac2f4dacf5017ceb1249ca0c71623fdca
+    name: nginx-proxy
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/nginx-proxy-0.1.2/nginx-proxy-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.25.0
     created: "2025-08-02T09:28:31.930759732Z"
     description: A Helm chart for nginx reverse proxies to local network devices
     digest: 00ff92cb297df7b91f9b8addaf6e107f7b76cd60959b00257b94cf2426ef912e
@@ -279,4 +289,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2025-08-02T09:28:31.9308001Z"
+generated: "2025-08-02T09:56:52.767163673Z"
