@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-services
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: nginx-proxy
+  namespace: homelab-services
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: nginx-proxy
+  targetNamespace: homelab-services
+  version: 0.1.2
+  valuesContent: |-
+    targets:
+      - name: dobby-robot
+        enabled: true
+        host: 10.0.20.251
+        port: 80
+        path: /
+        ingress:
+          host: dobby.jehli.net
+          path: /
+          port: 9061
+
+      # Example: NAS device
+      - name: nas-proxy
+        enabled: false
+        host: 192.168.1.100
+        port: 5000
+        path: /
+        ingress:
+          host: nas.cdglan.org
+          path: /
+          port: 9062
+
+      # Example: IP Camera
+      - name: camera-proxy
+        enabled: false
+        host: 192.168.1.50
+        port: 8080
+        path: /
+        ingress:
+          host: camera.cdglan.org
+          path: /
+          port: 9063
+
+    global:
+      ingressClassName: cloudflare-tunnel
