@@ -2,5 +2,5 @@ apiVersion: v2
 name: nginx-proxy
 description: A Helm chart for nginx reverse proxies to local network devices
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "1.25.0"
