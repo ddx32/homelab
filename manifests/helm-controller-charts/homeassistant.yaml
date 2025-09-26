@@ -15,7 +15,7 @@ spec:
   version: 0.1.11
   valuesContent: |-
     image:
-      tag: 2025.7
+      tag: 2025.9.4
     host: ha.jehli.net
     ingressClassName: cloudflare-tunnel
     storage:
