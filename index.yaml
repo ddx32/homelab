@@ -250,6 +250,15 @@ entries:
     version: 0.1.0
   navidrome:
   - apiVersion: v2
+    created: "2026-01-05T21:42:16.747156833Z"
+    description: Modern Music Server and Streamer compatible with Subsonic/Airsonic
+    digest: 59b93cd61754e5541582868a40a5beb7d2ec6bbda917fb832435f34249ebcef3
+    name: navidrome
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/navidrome-0.1.1/navidrome-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     created: "2026-01-05T21:29:33.330795463Z"
     description: Modern Music Server and Streamer compatible with Subsonic/Airsonic
     digest: 6d914c8c1ce4fc134513c648c8dacbd2103d5f20e6151ecbcc2dc8702216ca54
@@ -299,4 +308,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-01-05T21:29:33.330836984Z"
+generated: "2026-01-05T21:42:16.747237755Z"
