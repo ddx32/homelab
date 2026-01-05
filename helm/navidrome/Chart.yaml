@@ -2,4 +2,4 @@ apiVersion: v2
 name: navidrome
 description: Modern Music Server and Streamer compatible with Subsonic/Airsonic
 type: application
-version: 0.1.1
+version: 0.1.2

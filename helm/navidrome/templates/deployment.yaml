@@ -12,13 +12,10 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
-      initContainers:
-      - name: fix-permissions
-        image: busybox:latest
-        command: ['sh', '-c', 'chown -R 1000:1000 /data && chmod -R 755 /data']
-        volumeMounts:
-          - mountPath: /data
-            name: data
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
       - image: {{ .Values.image }}:{{ .Values.version }}
         imagePullPolicy: "Always"
