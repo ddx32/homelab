@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - image: {{ .Values.image }}:{{ .Values.version }}
+        imagePullPolicy: "Always"
+        name: {{ .Values.name }}
+        ports:
+          - containerPort: {{ .Values.containerPorts.webInterface }}
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+          - name: TZ
+            value: "Europe/Prague"
+          {{- range $key, $value := .Values.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /data
+            name: data
+          - mountPath: /music
+            name: music
+            readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}-data-pvc
+        - name: music
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}-music-pvc

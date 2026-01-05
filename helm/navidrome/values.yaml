@@ -1,0 +1,20 @@
+name: navidrome
+image: docker.io/deluan/navidrome
+version: latest
+nfs:
+  server: example.com
+  paths:
+    data: /path/to/data
+    music: /path/to/music
+ingress:
+  port: 80
+  path: /
+  host: navidrome.example.com
+ingressClassName: nginx
+containerPorts:
+  webInterface: 4533
+env:
+  # Optional environment variables for Navidrome configuration
+  # ND_LOGLEVEL: info
+  # ND_SESSIONTIMEOUT: 24h
+  # ND_BASEURL: ""
