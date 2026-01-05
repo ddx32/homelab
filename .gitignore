@@ -3,3 +3,4 @@
 *.tgz
 secrets/
 .DS_Store
+.env
