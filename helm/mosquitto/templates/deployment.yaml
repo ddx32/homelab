@@ -15,9 +15,18 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
+      initContainers:
+      - name: copy-config
+        image: busybox
+        command: ["sh", "-c", "cp /config-cm/* /mosquitto/config/"]
+        volumeMounts:
+          - name: {{ .Values.name }}-config-cm
+            mountPath: /config-cm
+          - name: {{ .Values.name }}-config
+            mountPath: /mosquitto/config
       containers:
       - name: {{ .Values.name }}
-        image: {{ .Values.image }}
+        image: {{ .Values.image }}:{{ .Values.imageTag }}
         ports:
         {{- range .Values.ports }}
           - containerPort: {{ .port }}
@@ -27,6 +36,8 @@ spec:
             mountPath: /mosquitto/config
       volumes:
         - name: {{ .Values.name }}-config
+          emptyDir: {}
+        - name: {{ .Values.name }}-config-cm
           configMap:
             name: {{ .Values.name }}-configmap
             defaultMode: 0700
