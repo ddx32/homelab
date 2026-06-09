@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - image: {{ .Values.image }}:{{ .Values.version }}
+        imagePullPolicy: "Always"
+        name: {{ .Values.name }}
+        ports:
+          - containerPort: {{ .Values.containerPorts.webInterface }}
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+          - name: TZ
+            value: "Europe/Prague"
+        volumeMounts:
+          - mountPath: /config
+            name: config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}-config-pvc

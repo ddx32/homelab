@@ -1,0 +1,14 @@
+name: prowlarr
+image: ghcr.io/hotio/prowlarr
+version: release
+nfs:
+  server: example.com
+  paths:
+    config: /path/to/config
+ingress:
+  port: 80
+  path: /
+  host: prowlarr.example.com
+ingressClassName: nginx
+containerPorts:
+  webInterface: 9696
