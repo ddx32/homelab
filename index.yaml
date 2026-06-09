@@ -334,6 +334,16 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/nginx-proxy-0.1.0/nginx-proxy-0.1.0.tgz
     version: 0.1.0
+  prowlarr:
+  - apiVersion: v2
+    created: "2026-06-09T19:06:05.689961273Z"
+    description: Indexer manager and proxy for the *arr stack
+    digest: 6400c96beef8b3ac723964b587cc2a311039b57365d56ccdd677b180a06f0117
+    name: prowlarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/prowlarr-0.1.0/prowlarr-0.1.0.tgz
+    version: 0.1.0
   sonarr:
   - apiVersion: v2
     created: "2026-06-09T17:57:09.422282604Z"
@@ -355,4 +365,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-06-09T18:35:02.640911469Z"
+generated: "2026-06-09T19:06:05.690023115Z"
