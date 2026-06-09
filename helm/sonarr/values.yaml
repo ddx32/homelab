@@ -1,0 +1,15 @@
+name: sonarr
+image: ghcr.io/hotio/sonarr
+version: release
+nfs:
+  server: example.com
+  paths:
+    config: /path/to/config
+    media: /path/to/media-library
+ingress:
+  port: 80
+  path: /
+  host: sonarr.example.com
+ingressClassName: nginx
+containerPorts:
+  webInterface: 8989
