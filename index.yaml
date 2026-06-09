@@ -325,6 +325,17 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/nginx-proxy-0.1.0/nginx-proxy-0.1.0.tgz
     version: 0.1.0
+  sonarr:
+  - apiVersion: v2
+    created: "2026-06-09T17:57:09.422282604Z"
+    description: TV-show library manager that monitors RSS feeds and downloads new
+      episodes
+    digest: 1964660a75918c54e1535e5bc661b7af1fc48113bb508450b98cd1c6b77a72f4
+    name: sonarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/sonarr-0.1.0/sonarr-0.1.0.tgz
+    version: 0.1.0
   transmission:
   - apiVersion: v2
     created: "2024-01-29T21:52:21.642990359Z"
@@ -335,4 +346,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-02-07T14:20:44.790661529Z"
+generated: "2026-06-09T17:57:09.422373514Z"
