@@ -1,0 +1,15 @@
+name: radarr
+image: ghcr.io/hotio/radarr
+version: release
+nfs:
+  server: example.com
+  paths:
+    config: /path/to/config
+    media: /path/to/media-library
+ingress:
+  port: 80
+  path: /
+  host: radarr.example.com
+ingressClassName: nginx
+containerPorts:
+  webInterface: 7878
