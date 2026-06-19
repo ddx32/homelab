@@ -344,6 +344,16 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/prowlarr-0.1.0/prowlarr-0.1.0.tgz
     version: 0.1.0
+  radarr:
+  - apiVersion: v2
+    created: "2026-06-19T18:34:51.266390277Z"
+    description: Movie library manager that monitors RSS feeds and downloads new releases
+    digest: d3d897eccaba913969cd6a7dc8de5eae098852ec1a69bb78b63f03c926d4dc55
+    name: radarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/radarr-0.1.0/radarr-0.1.0.tgz
+    version: 0.1.0
   sonarr:
   - apiVersion: v2
     created: "2026-06-09T17:57:09.422282604Z"
@@ -365,4 +375,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-06-09T19:06:05.690023115Z"
+generated: "2026-06-19T18:34:51.26647628Z"
