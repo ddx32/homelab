@@ -1,0 +1,19 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: radarr
+  namespace: media-stack
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: radarr
+  targetNamespace: media-stack
+  version: 0.1.0
+  valuesContent: |-
+    nfs:
+      server: omv.cdglan.org
+      paths:
+        config: /export/ssd-data/radarr/config
+        media: /export/media-library
+    ingress:
+      host: radarr.jehli.net
+    ingressClassName: cloudflare-tunnel

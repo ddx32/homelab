@@ -1,0 +1,64 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: prowlarr
+  namespace: media-stack
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: prowlarr
+  targetNamespace: media-stack
+  version: 0.1.0
+  valuesContent: |-
+    nfs:
+      server: omv.cdglan.org
+      paths:
+        config: /export/ssd-data/prowlarr/config
+    ingress:
+      host: prowlarr.jehli.net
+    ingressClassName: cloudflare-tunnel
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+  namespace: media-stack
+  labels:
+    app: flaresolverr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flaresolverr
+  template:
+    metadata:
+      labels:
+        app: flaresolverr
+    spec:
+      containers:
+        - name: flaresolverr
+          image: ghcr.io/flaresolverr/flaresolverr:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8191
+          env:
+            - name: LOG_LEVEL
+              value: "info"
+            - name: TZ
+              value: "Europe/Prague"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaresolverr
+  namespace: media-stack
+  labels:
+    app: flaresolverr
+    k8s-app: flaresolverr
+    app.kubernetes.io/part-of: prowlarr
+spec:
+  ports:
+    - name: http
+      port: 8191
+      targetPort: 8191
+  selector:
+    app: flaresolverr
