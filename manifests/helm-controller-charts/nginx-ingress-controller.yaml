@@ -3,12 +3,27 @@ kind: Namespace
 metadata:
   name: nginx-ingress
 ---
+# Official kubernetes ingress-nginx controller.
+# Replaces the deprecated Bitnami "nginx-ingress-controller" chart, whose images
+# Bitnami removed from Docker Hub in 2025 (docker.io/bitnami/* -> pull denied).
+# This chart uses registry.k8s.io images (pullable on all nodes) and keeps the
+# IngressClass name "nginx" so existing Ingresses (e.g. default/homer) keep working.
+# Version pinned so a helm-controller reconcile can never silently jump charts.
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
-  name: nginx-ingress-controller
+  name: ingress-nginx
   namespace: kube-system
 spec:
-  repo: https://charts.bitnami.com/bitnami
-  chart: nginx-ingress-controller
+  repo: https://kubernetes.github.io/ingress-nginx
+  chart: ingress-nginx
+  version: "4.11.3"
   targetNamespace: nginx-ingress
+  valuesContent: |-
+    controller:
+      ingressClassResource:
+        name: nginx
+        enabled: true
+        default: false
+      service:
+        type: LoadBalancer
