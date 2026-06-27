@@ -1,0 +1,55 @@
+---
+# Provision k3s agent (worker) nodes and join them to the kube-captain server.
+#
+# Adds worker capacity to the cluster to relieve memory pressure on the single
+# control-plane node. The cluster join token is read at runtime from the server
+# (kube-captain) via the k3s_server group, so no secret is committed to the repo.
+#
+# Usage:
+#   cd ansible && ansible-playbook playbooks/k3s/k3s-agent.yaml
+#
+- name: Join k3s agent nodes to the cluster
+  hosts: k3s_agents
+  become: true
+  vars:
+    k3s_version: "v1.27.6+k3s1"               # MUST match the running server version
+    k3s_server_host: "{{ groups['k3s_server'][0] }}"
+    k3s_server_url: "https://{{ hostvars[k3s_server_host].ansible_host }}:6443"
+
+  tasks:
+    - name: Install NFS client (for NFS-backed PersistentVolumes)
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Read the cluster node-token from the k3s server
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      delegate_to: "{{ k3s_server_host }}"
+      register: k3s_node_token
+      run_once: true
+
+    - name: Install and join the k3s agent
+      ansible.builtin.shell:
+        cmd: curl -sfL https://get.k3s.io | sh -
+        creates: /usr/local/bin/k3s
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+        INSTALL_K3S_EXEC: "agent"
+        K3S_URL: "{{ k3s_server_url }}"
+        K3S_TOKEN: "{{ k3s_node_token.content | b64decode | trim }}"
+      no_log: true        # keep the token out of logs
+
+    - name: Ensure the k3s-agent service is enabled and running
+      ansible.builtin.systemd:
+        name: k3s-agent
+        state: started
+        enabled: true
+
+    - name: Wait for the node to register as Ready
+      ansible.builtin.command:
+        cmd: "k3s kubectl wait --for=condition=Ready node/{{ inventory_hostname }} --timeout=120s"
+      delegate_to: "{{ k3s_server_host }}"
+      changed_when: false

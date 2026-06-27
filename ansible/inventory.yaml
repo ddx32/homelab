@@ -20,9 +20,20 @@ jehlinet_vms:
       ansible_host: 10.0.40.201
     kube-captain:
       ansible_host: 10.0.40.102
+    kube-worker:
+      ansible_host: 10.0.40.104
   vars:
     ansible_user: jsolon
     ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+# k3s cluster role groups (hosts defined above in jehlinet_vms)
+k3s_server:
+  hosts:
+    kube-captain:
+
+k3s_agents:
+  hosts:
+    kube-worker:
 
 alpine_hosts:
   hosts:
