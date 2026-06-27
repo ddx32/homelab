@@ -12,6 +12,11 @@ spec:
   repo: https://charts.jetstack.io
   chart: cert-manager
   targetNamespace: cert-manager
-  version: v1.13.2
+  # 1.16.x supports Kubernetes 1.28-1.31 (gates the k3s upgrade path past 1.28).
+  # Upgraded one minor at a time from 1.13.2 (1.14.7 -> 1.15.5 -> 1.16.5).
+  version: v1.16.5
   valuesContent: |-
-    installCRDs: true
+    # installCRDs (used through 1.14) was replaced by crds.* in 1.15+.
+    crds:
+      enabled: true
+      keep: true
