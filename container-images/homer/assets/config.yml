@@ -64,12 +64,6 @@ services:
   - name: "Applications"
     icon: "fas fa-cloud"
     items:
-      - name: "Transmission"
-        logo: "assets/transmission-icon.png"
-        subtitle: "Torrent download manager"
-        tag: "app"
-        url: "https://transmission.cdglan.org"
-        target: "_blank" # optional html a tag target attribute
       - name: "Grafana"
         logo: "assets/grafana-icon.png"
         subtitle: "Graphs and monitoring"
