@@ -34,9 +34,22 @@ spec:
         volumeMounts:
           - name: {{ .Values.name }}-config
             mountPath: /mosquitto/config
+          # TODO: persistence is broken — mosquitto.conf is rendered with
+          #   persistence true / persistence_location {{ .Values.config.persistenceLocation }}
+          # and pvc.yaml provisions {{ .Values.name }}-pvc bound to {{ .Values.volumeName }},
+          # but that claim is never mounted here. The broker therefore writes mosquitto.db to
+          # container-local storage and loses all retained messages and subscriptions on every
+          # restart. Confirmed 2026-09-01: /export/ssd-data/mosquitto/data on the NAS has been
+          # empty since Feb 2026. To fix, mount the claim at the persistence location:
+          #   - name: {{ .Values.name }}-data
+          #     mountPath: {{ .Values.config.persistenceLocation }}
+          # and add the matching volume below. Needs a Chart.yaml version bump to publish.
       volumes:
         - name: {{ .Values.name }}-config
           emptyDir: {}
+        # - name: {{ .Values.name }}-data
+        #   persistentVolumeClaim:
+        #     claimName: {{ .Values.name }}-pvc
         - name: {{ .Values.name }}-config-cm
           configMap:
             name: {{ .Values.name }}-configmap
