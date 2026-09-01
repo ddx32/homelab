@@ -19,7 +19,7 @@ spec:
     host: ha.jehli.net
     ingressClassName: cloudflare-tunnel
     storage:
-      server: omv.cdglan.org
+      server: 10.0.40.201
       name: ha-storage
       path: /export/ssd-data/homeassistant
       mountPath: /config

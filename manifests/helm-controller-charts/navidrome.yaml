@@ -16,7 +16,7 @@ spec:
   valuesContent: |-
     version: latest
     nfs:
-      server: omv.cdglan.org
+      server: 10.0.40.201
       paths:
         data: /export/ssd-data/navidrome/data
         music: /export/media-library

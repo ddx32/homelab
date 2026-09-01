@@ -17,7 +17,7 @@ spec:
     - ReadWriteOnce
   nfs:
     path: /export/ssd-data/homebridge
-    server: omv.cdglan.org
+    server: 10.0.40.201
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart

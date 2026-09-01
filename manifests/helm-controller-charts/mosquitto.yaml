@@ -16,7 +16,7 @@ spec:
   storageClassName: nfs
   nfs:
     path: /export/ssd-data/mosquitto/data
-    server: omv.cdglan.org
+    server: 10.0.40.201
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart

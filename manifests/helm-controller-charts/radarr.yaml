@@ -10,7 +10,7 @@ spec:
   version: 0.1.0
   valuesContent: |-
     nfs:
-      server: omv.cdglan.org
+      server: 10.0.40.201
       paths:
         config: /export/ssd-data/radarr/config
         media: /export/media-library
