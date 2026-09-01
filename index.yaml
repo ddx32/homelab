@@ -249,6 +249,15 @@ entries:
     version: 0.1.1
   mosquitto:
   - apiVersion: v2
+    created: "2026-09-01T21:05:38.263113193Z"
+    description: Mosquitto MQTT broker
+    digest: 348928a40163c3cdc2eed23bec12a93d73dedb37ff620b8ddb527583733e55ef
+    name: mosquitto
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/mosquitto-0.2.1/mosquitto-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
     created: "2026-02-07T14:20:44.790590166Z"
     description: Mosquitto MQTT broker
     digest: af05840757aa252a6b2b360e50d2f8e7c6cc6cef6ee95a2df1e3065b80ff0075
@@ -375,4 +384,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-06-19T18:34:51.26647628Z"
+generated: "2026-09-01T21:05:38.263169171Z"
