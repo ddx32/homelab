@@ -1,6 +1,0 @@
-name: homer
-image:
-  name: docker.io/pirateofthecerulean/homer
-  tag: latest
-port: 8080
-host: cdglan.org

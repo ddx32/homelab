@@ -7,8 +7,13 @@ metadata:
 # Replaces the deprecated Bitnami "nginx-ingress-controller" chart, whose images
 # Bitnami removed from Docker Hub in 2025 (docker.io/bitnami/* -> pull denied).
 # This chart uses registry.k8s.io images (pullable on all nodes) and keeps the
-# IngressClass name "nginx" so existing Ingresses (e.g. default/homer) keep working.
+# IngressClass name "nginx".
 # Version pinned so a helm-controller reconcile can never silently jump charts.
+#
+# NOTE: as of the homer teardown (2026-09-01) NOTHING uses this IngressClass.
+# homer was its only consumer; the monitoring ingresses declare no ingressClassName
+# at all, so they are not served by it either. Kept deliberately, but it is a
+# candidate for removal if no nginx-class Ingress reappears.
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:

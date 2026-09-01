@@ -39,9 +39,6 @@ spec:
           - name: omv
             type: A
             value: 10.0.40.201
-          - name: homer
-            type: A
-            value: 10.0.40.102
           - name: grafana
             type: A
             value: 10.0.40.102
