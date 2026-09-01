@@ -2,4 +2,4 @@ apiVersion: v2
 name: prowlarr
 description: Indexer manager and proxy for the *arr stack
 type: application
-version: 0.1.0
+version: 0.1.1

@@ -3,8 +3,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.name }}-ingress
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-production
 spec:
   ingressClassName: {{ .Values.ingressClassName }}
   rules:
@@ -18,7 +16,3 @@ spec:
                 name: {{ .Values.name }}
                 port:
                   number: {{ .Values.port }}
-  tls:
-    - hosts:
-        - {{ .Values.host }}
-      secretName: adminer-cert

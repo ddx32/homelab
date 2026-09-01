@@ -12,5 +12,3 @@ volumeName: homebridge-config
 ingress:
   ingressClassName: nginx
   hosts: []
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-production
