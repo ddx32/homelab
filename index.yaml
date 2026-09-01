@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   adminer:
   - apiVersion: v2
+    created: "2026-09-01T23:20:16.409116+02:00"
+    description: Adminer MySQL management tool
+    digest: c6467b94f59be5bef80d1fc8e546b77efcf22a964f83ed696a9b31cd7b753420
+    name: adminer
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/adminer-0.1.2/adminer-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2025-08-01T08:33:16.797823371Z"
     description: Adminer MySQL management tool
     digest: 00c5b2777ebc8c2abfc1a694b5235cc08b570ad1938ab4d560bb476f1cdf4683
@@ -41,6 +50,16 @@ entries:
   cert-manager-setup:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2026-09-01T23:20:16.409411+02:00"
+    description: Custom issuers and secrets for generating a let's encrypt cert
+    digest: 56aef29e6db438532fdd84ce30d9c1895e8f06917240c9001947af465bdc3537
+    name: cert-manager-setup
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/cert-manager-setup-0.1.3/cert-manager-setup-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2024-01-29T21:52:21.287576891Z"
     description: Custom issuers and secrets for generating a let's encrypt cert
     digest: 6a862077a08ebe0a23d392d4cf5691cb95d33fec7e11babefa46a9feefc4357a
@@ -50,6 +69,15 @@ entries:
     - https://github.com/ddx32/homelab/releases/download/cert-manager-setup-0.1.2/cert-manager-setup-0.1.2.tgz
     version: 0.1.2
   deluge:
+  - apiVersion: v2
+    created: "2026-09-01T23:20:16.40968+02:00"
+    description: A lightweight, Free Software, cross-platform BitTorrent client
+    digest: 1b0dca0ced7d29196e76cec94b3aef142efab6c1bd133104db0bb6b39f54842e
+    name: deluge
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/deluge-0.1.3/deluge-0.1.3.tgz
+    version: 0.1.3
   - apiVersion: v2
     created: "2026-06-09T18:35:02.640869667Z"
     description: A lightweight, Free Software, cross-platform BitTorrent client
@@ -78,6 +106,15 @@ entries:
     - https://github.com/ddx32/homelab/releases/download/deluge-0.1.0/deluge-0.1.0.tgz
     version: 0.1.0
   esphome:
+  - apiVersion: v2
+    created: "2026-09-01T23:20:16.409951+02:00"
+    description: esphome chart
+    digest: f8a6fff9fdae901f057c34ee02d5d591b2af3bafc35db5c7940be144ad9a3822
+    name: esphome
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/esphome-0.1.4/esphome-0.1.4.tgz
+    version: 0.1.4
   - apiVersion: v2
     created: "2025-07-31T21:17:45.767038428Z"
     description: esphome chart
@@ -192,6 +229,15 @@ entries:
     version: 0.1.4
   homebridge:
   - apiVersion: v2
+    created: "2026-09-01T23:20:16.410085+02:00"
+    description: HomeKit support for the impatient
+    digest: 9f90287647441048eafef76a8832a2dd3dc1dde80f8a3e5866a326c17f769036
+    name: homebridge
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/homebridge-0.2.2/homebridge-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     created: "2025-07-31T21:17:45.888515363Z"
     description: HomeKit support for the impatient
     digest: b131e82be9a06a31d1043ddc0030262fe412b5d7f5834e0cd71b0a427f216a2e
@@ -277,6 +323,15 @@ entries:
     version: 0.1.0
   navidrome:
   - apiVersion: v2
+    created: "2026-09-01T23:20:16.410229+02:00"
+    description: Modern Music Server and Streamer compatible with Subsonic/Airsonic
+    digest: 2fe6ebe59167c92ee4290ef102f9a33bc076cd7f4d836f3e4261df69d263db66
+    name: navidrome
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/navidrome-0.1.4/navidrome-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
     created: "2026-01-08T08:51:04.153925089Z"
     description: Modern Music Server and Streamer compatible with Subsonic/Airsonic
     digest: 2051fa054a538db1afa992a97e92c674f8b2d319c44f4db774e0fd839517e709
@@ -315,6 +370,16 @@ entries:
   nginx-proxy:
   - apiVersion: v2
     appVersion: 1.25.0
+    created: "2026-09-01T23:20:16.410405+02:00"
+    description: A Helm chart for nginx reverse proxies to local network devices
+    digest: 39dba7e47f62ab5b8cf3e50f5e3837ee03b93c6c9e60ad44ad485865d53ed8e9
+    name: nginx-proxy
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/nginx-proxy-0.1.3/nginx-proxy-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: 1.25.0
     created: "2025-08-02T09:56:52.767117917Z"
     description: A Helm chart for nginx reverse proxies to local network devices
     digest: 817532593c60ce0540e1041d77b7610ac2f4dacf5017ceb1249ca0c71623fdca
@@ -345,6 +410,15 @@ entries:
     version: 0.1.0
   prowlarr:
   - apiVersion: v2
+    created: "2026-09-01T23:20:16.411297+02:00"
+    description: Indexer manager and proxy for the *arr stack
+    digest: 1434930bc71af6a490ab6473cefc0d4b8fb4240eaf6a7d35606c04baa0e02994
+    name: prowlarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/prowlarr-0.1.1/prowlarr-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     created: "2026-06-09T19:06:05.689961273Z"
     description: Indexer manager and proxy for the *arr stack
     digest: 6400c96beef8b3ac723964b587cc2a311039b57365d56ccdd677b180a06f0117
@@ -355,6 +429,15 @@ entries:
     version: 0.1.0
   radarr:
   - apiVersion: v2
+    created: "2026-09-01T23:20:16.411437+02:00"
+    description: Movie library manager that monitors RSS feeds and downloads new releases
+    digest: a49e2aa2c14e34ca7ddd534ce725ee4a98b7b04fe8b57e312971327fc86e2ac9
+    name: radarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/radarr-0.1.1/radarr-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     created: "2026-06-19T18:34:51.266390277Z"
     description: Movie library manager that monitors RSS feeds and downloads new releases
     digest: d3d897eccaba913969cd6a7dc8de5eae098852ec1a69bb78b63f03c926d4dc55
@@ -364,6 +447,16 @@ entries:
     - https://github.com/ddx32/homelab/releases/download/radarr-0.1.0/radarr-0.1.0.tgz
     version: 0.1.0
   sonarr:
+  - apiVersion: v2
+    created: "2026-09-01T23:20:16.411572+02:00"
+    description: TV-show library manager that monitors RSS feeds and downloads new
+      episodes
+    digest: 255659d6ef9cd95908c7ca7e60a04419b5c06513cfb6d397fc70785a8c18bbf7
+    name: sonarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/sonarr-0.1.1/sonarr-0.1.1.tgz
+    version: 0.1.1
   - apiVersion: v2
     created: "2026-06-09T17:57:09.422282604Z"
     description: TV-show library manager that monitors RSS feeds and downloads new
@@ -384,4 +477,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-09-01T21:05:38.263169171Z"
+generated: "2026-09-01T23:20:16.408459+02:00"
