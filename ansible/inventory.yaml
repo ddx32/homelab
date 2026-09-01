@@ -4,8 +4,6 @@ jehlinet_hosts:
       ansible_host: 10.0.10.4
     holly: # Holly PVE host (NAS)
       ansible_host: 10.0.10.5
-    overwatcher: # Frigate on Raspberry Pi 4
-      ansible_host: 10.0.10.128
     printer-buddy: # RPi Zero W as a print/scanner server
       ansible_host: 10.0.20.230
   vars:
