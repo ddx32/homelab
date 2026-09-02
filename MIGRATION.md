@@ -1,8 +1,8 @@
 # cdglan.org → jehli.net migration
 
-Status: **Phase 1 is applied and verified.** All 14 NFS PVs now point at `10.0.40.201`.
-Phase 2 (publish charts, drop the dead cert-manager config) and Phase 3 (retire cdglan.org)
-are still outstanding.
+Status: **Phases 1 and 2 are applied and verified.** All 14 NFS PVs point at `10.0.40.201`,
+and no cloudflare-tunnel ingress carries cert-manager config any more. Phase 3 (retire
+cdglan.org) is still outstanding.
 
 ## Why NFS moved to an IP, not a name
 
@@ -139,7 +139,31 @@ Removed 2026-09-01. It never ran in k8s — it was a docker-compose stack on `ov
 (RPi 4, `10.0.10.128`), and its ports were already closed. `ansible/playbooks/frigate/` and
 the `overwatcher` inventory entry are gone. The Pi itself was left untouched.
 
-## Phase 2 — publish charts, then drop the dead cert config
+## Phase 2 — publish charts, then drop the dead cert config — **DONE 2026-09-02**
+
+All ten cloudflare-tunnel ingresses now render with no `tls:` block and no
+`cert-manager.io/cluster-issuer`; their Certificates and TLS secrets are deleted and
+ingress-shim does not recreate them. Every service still answers over HTTPS, and the edge
+serves `CN=jehli.net` issued by Google Trust Services — Cloudflare's own certificate, which
+was never connected to the cert-manager ones.
+
+Three traps worth remembering, all hit during this run:
+
+- **A chart edit without a version bump breaks the whole release pipeline.** mosquitto was
+  changed (a comment) but left at 0.2.0, and chart-releaser died on it:
+  `422 Validation Failed [{Resource:Release Field:tag_name Code:already_exists}]`. That
+  aborted the run after 5 releases and before `cr index`, so five charts were released but
+  unindexed and five were never reached. Consider adding `skip_existing: true` to
+  `.github/workflows/helm-release.yaml` to make the pipeline idempotent.
+- **chart-releaser only processes charts changed in the triggering push.** Fixing mosquitto
+  and pushing again republished *only* mosquitto. Recovering the rest meant uploading the
+  missing releases and rebuilding `index.yaml` by hand with `cr`.
+- **`helm repo update` can return a cached index.** It reported success while still serving
+  a stale 15 KB index, so every `helm show chart` failed with "not found in index" even
+  though GitHub Pages was serving the correct 19 KB file. Delete
+  `~/Library/Caches/helm/repository/<repo>-index.yaml` if versions look missing.
+
+## Phase 2 — the procedure that was used
 
 Phase 1 works against the **currently published** chart versions. The cert-manager cleanup
 needs a chart release first, so do it second.
@@ -179,6 +203,22 @@ needs a chart release first, so do it second.
 
    Do this only *after* step 2 has rolled out. While the annotation is still on the ingress,
    cert-manager's ingress-shim recreates each Certificate as fast as you delete it.
+
+   cert-manager deliberately leaves the TLS `Secret` behind when a `Certificate` is deleted,
+   so remove those too (same names, same namespaces). Check nothing references them first —
+   by this point no ingress should.
+
+   Note these Certificates had gone `Ready=True` shortly before deletion: retargeting the
+   ClusterIssuer solver to `jehli.net` finally let them issue, after years of failing. They
+   were still unused, since TLS terminates at Cloudflare.
+
+### Still outstanding after Phase 2
+
+`cert-manager/le-test-cdglan-org` is still `Ready=False` and cannot ever issue — it is
+hardcoded to `le-test.cdglan.org` in `helm/cert-manager/templates/test-certificate.yaml`,
+and that domain is not in Cloudflare. Either point it at a `jehli.net` name or drop the
+template; it needs a chart version bump either way. The three `monitoring` Certificates were
+deliberately left alone.
 
 ## Phase 3 — retire cdglan.org
 
