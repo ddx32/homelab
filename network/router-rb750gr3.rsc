@@ -163,15 +163,6 @@
     comment="k8s CoreDNS - LAN infra names"
 }
 
-# Second replica. Disabled on purpose: RouterOS only uses the first matching
-# entry, so this is a manual switch, not automatic failover.
-:local dnsfwd2 [/ip/dns/static/find where name="lan.jehli.net" and forward-to="10.0.40.104"]
-:if ([:len $dnsfwd2] = 0) do={
-  /ip/dns/static/add name=lan.jehli.net type=FWD forward-to=10.0.40.104 \
-    match-subdomain=yes disabled=yes \
-    comment="k8s CoreDNS replica 2 - MANUAL fallback only, no auto-failover"
-}
-
 :local prusa [/ip/dns/static/find where name="dev.connect.prusa"]
 :if ([:len $prusa] = 0) do={
   /ip/dns/static/add name=dev.connect.prusa type=A address=10.2.0.29
@@ -207,9 +198,6 @@
       comment="RFC1918 segments - used by VLAN isolation rules"
   }
 }
-:local fb [/ip/firewall/address-list/find where list="fallback-lan"]
-:if ([:len $fb] > 0) do={ /ip/firewall/address-list/set $fb address=192.168.0.0/24 }
-
 # MUST come before the IoT drop. Five IoT devices hold long-lived MQTT sessions
 # to mosquitto in k3s; without this, Home Assistant silently loses every sensor.
 :if ([:len [/ip/firewall/filter/find where comment="iot: allow MQTT to broker"]] = 0) do={

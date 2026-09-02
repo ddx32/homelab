@@ -116,9 +116,10 @@ CoreDNS is deployed by `manifests/helm-controller-charts/coredns-lan.yaml` and s
 `lan.jehli.net`; it REFUSES anything else, so it can never act as an open resolver. Full
 detail in [`../MIGRATION.md`](../MIGRATION.md).
 
-`type=FWD` static entries take **one** `forward-to` address. A comma-separated list parses
+`type=FWD` static entries take **one** `forward-to` address — a comma-separated list parses
 but then SERVFAILs every query. Only the first matching entry is ever used, so a second entry
-is a manual fallback, not failover.
+buys nothing; there is no failover. If `kube-captain` is down, `lan.jehli.net` stops resolving
+and `nas.local` (mDNS, cluster-independent) is the fallback.
 
 mDNS is repeated by the router across vlan10, vlan20 and vlan40, which is what makes
 `nas.local` resolve across VLANs. That path does not depend on the cluster, unlike
@@ -127,8 +128,12 @@ mDNS is repeated by the router across vlan10, vlan20 and vlan40, which is what m
 ## Notes
 
 - **CGNAT.** The PPPoE WAN address is RFC1918, so inbound port forwarding cannot work. This
-  is why ingress is Cloudflare Tunnel (outbound-only). Four `dstnat` rules for 80/443/6881 →
-  10.0.40.102 are left over from before and can never fire.
+  is why ingress is Cloudflare Tunnel (outbound-only). The leftover `dstnat` rules were
+  deleted 2026-09-02.
+- **The `WAN` interface list contains `ether1`, not `pppoe-o2`.** Internet traffic arrives on
+  the PPPoE interface, so anything keyed on `in-interface-list=WAN` never matches — defconf's
+  "drop all from WAN not DSTNATed" has fired 0 packets. Adding `pppoe-o2` to the list would
+  activate it, but that changes forward-chain behaviour and is untested here.
 - **Management is a /24** on all three devices. It was a /16 until 2026-09-02; the five
   192.168.x.x ARP entries outside the /24 turned out to be incomplete entries with no MAC and
   no ping reply, not real hosts.
