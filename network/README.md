@@ -132,9 +132,36 @@ mDNS is repeated by the router across vlan10, vlan20 and vlan40, which is what m
 - **Management is a /24** on all three devices. It was a /16 until 2026-09-02; the five
   192.168.x.x ARP entries outside the /24 turned out to be incomplete entries with no MAC and
   no ping reply, not real hosts.
-- **Management is still flat at the input chain.** The VLAN isolation above is `forward` only,
-  so guest and IoT can still reach the *router's own* services (SSH, Winbox, DNS). Restrict
-  with `/ip service address=192.168.0.0/24,10.0.10.0/24` to close that.
+- **The input chain is locked down** as of 2026-09-02. SSH, Winbox and WebFig accept only
+  `192.168.0.0/24` and `10.0.10.0/24`, enforced both by firewall rule and by
+  `/ip service address=`. Everything not explicitly allowed is dropped and logged as
+  `inputdrop`. This also closed the router's DNS resolver on the PPPoE interface, which was
+  previously reachable from anything that could route to the WAN address.
+
+### Input chain
+
+What the router itself accepts, and why — each entry was observed on a temporary logging rule
+before the drop went in, not guessed:
+
+| Allowed | From | Breaks if removed |
+|---|---|---|
+| udp 67,68 | any VLAN | DHCP leases everywhere |
+| udp/tcp 53 | `internal` | lab, iot, vms and mgmt name resolution |
+| udp 5353 | any | mDNS repeater — `nas.local` across VLANs |
+| igmp | any | multicast membership that mDNS depends on |
+| udp 5678 | `internal` | `/ip neighbor` discovery of the switch and AP |
+| tcp 2200, 8291, 80, 443 | `mgmt-allowed` | your own management access |
+| established, related, ICMP | any | defconf, already present |
+
+Deliberately dropped: udp/17500 (Dropbox LAN sync), udp/1900 (SSDP), udp/6667. These are
+broadcasts that land on input without being addressed to the router.
+
+Changing this chain risks locking yourself out. Add a rollback first — a scheduler that
+removes the drop rule after a few minutes — verify access, then delete the scheduler:
+
+```
+/system scheduler add name=fwrollback interval=4m on-event="/ip firewall filter remove [find log-prefix=inputdrop]; /system scheduler remove [find name=fwrollback]"
+```
 
 ## Scripts
 

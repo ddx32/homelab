@@ -228,6 +228,71 @@
     comment="isolate guest from other VLANs"
 }
 
+# --------------------------------------------------- input chain lockdown
+# The input chain had no drop rule, so every VLAN — and, but for CGNAT, the
+# internet — could reach SSH, Winbox, WebFig and the DNS resolver.
+#
+# The allow list below is not guesswork: a non-terminating log rule was left on
+# the input chain first, and these are the flows it actually saw. Removing any
+# of them breaks something real:
+#   DHCP   - all VLANs, or clients get no lease
+#   DNS    - lab, iot, vms and mgmt all resolve through the router
+#   mDNS   - the repeater; without it nas.local stops working across VLANs
+#   IGMP   - multicast group membership that mDNS relies on
+#   5678   - MikroTik neighbour discovery, how /ip neighbor sees switch and AP
+#
+# Broadcast chatter that is NOT allowed and is safely dropped: udp/17500
+# (Dropbox LAN sync), udp/1900 (SSDP), udp/6667. None are addressed to the
+# router; they merely land on input because they are broadcasts.
+
+:foreach n in={"192.168.0.0/24";"10.0.10.0/24"} do={
+  :if ([:len [/ip/firewall/address-list/find where list="mgmt-allowed" and address=$n]] = 0) do={
+    /ip/firewall/address-list/add list=mgmt-allowed address=$n \
+      comment="may reach router management services"
+  }
+}
+
+# comment / protocol / ports / src-address-list ("" = any source)
+:local inrules {
+  {"input: DHCP (all VLANs)";"udp";"67,68";""};
+  {"input: DNS udp from LAN";"udp";"53";"internal"};
+  {"input: DNS tcp from LAN";"tcp";"53";"internal"};
+  {"input: mDNS repeater";"udp";"5353";""};
+  {"input: MikroTik neighbour discovery";"udp";"5678";"internal"};
+  {"input: management from mgmt+lab only";"tcp";"2200,8291,80,443";"mgmt-allowed"}
+}
+:foreach r in=$inrules do={
+  :local c [:pick $r 0]; :local p [:pick $r 1]
+  :local d [:pick $r 2]; :local sl [:pick $r 3]
+  :if ([:len [/ip/firewall/filter/find where comment=$c]] = 0) do={
+    :if ($sl = "") do={
+      /ip/firewall/filter/add chain=input action=accept protocol=$p dst-port=$d comment=$c
+    } else={
+      /ip/firewall/filter/add chain=input action=accept protocol=$p dst-port=$d \
+        src-address-list=$sl comment=$c
+    }
+  }
+}
+:if ([:len [/ip/firewall/filter/find where comment="input: IGMP for multicast"]] = 0) do={
+  /ip/firewall/filter/add chain=input action=accept protocol=igmp \
+    comment="input: IGMP for multicast"
+}
+
+# MUST be last in the input chain. Logged so anything unexpectedly blocked is
+# visible rather than silent.
+:if ([:len [/ip/firewall/filter/find where comment="input: drop everything else"]] = 0) do={
+  /ip/firewall/filter/add chain=input action=drop log=yes log-prefix=inputdrop \
+    comment="input: drop everything else"
+}
+
+# Defence in depth: the service restriction holds even if the rules above are
+# reordered or disabled. Use the bare service name as the selector - [find
+# name=...] matches the wrong item here and silently edits telnet.
+/ip service set www     address=192.168.0.0/24,10.0.10.0/24
+/ip service set www-ssl address=192.168.0.0/24,10.0.10.0/24
+/ip service set ssh     address=192.168.0.0/24,10.0.10.0/24
+/ip service set winbox  address=192.168.0.0/24,10.0.10.0/24
+
 # ----------------------------------------------------------------- system
 /system/clock/set time-zone-name=Europe/Prague
 /ip/neighbor/discovery-settings/set discover-interface-list=LAN
