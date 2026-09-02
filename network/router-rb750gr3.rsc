@@ -71,7 +71,7 @@
 # ------------------------------------------------------------ addressing
 # address / interface / comment
 :local addrs {
-  {"192.168.0.1/16";"lan_bridge";"Internal LAN subnet"};
+  {"192.168.0.1/24";"lan_bridge";"Management"};
   {"10.0.10.1/24";"vlan10-lab";"lab"};
   {"10.0.20.1/24";"vlan20-iot";"iot"};
   {"10.0.30.1/24";"vlan30-guest";"guest"};
@@ -128,16 +128,18 @@
   {"10.0.20.0/24";"10.0.20.1";"10.0.20.1";"";"vlan20-iot"};
   {"10.0.30.0/24";"10.0.30.1";"1.1.1.1,8.8.8.8";"";"vlan30-guest"};
   {"10.0.40.0/24";"10.0.40.1";"10.0.40.1";"";"vlan40-vms"};
-  {"192.168.0.0/16";"192.168.0.1";"192.168.0.1";"lan.jehli.net";""}
+  {"192.168.0.0/24";"192.168.0.1";"192.168.0.1";"lan.jehli.net";"mgmt"}
 }
 :foreach n in=$nets do={
   :local sub [:pick $n 0]; :local gw [:pick $n 1]; :local dns [:pick $n 2]
   :local dom [:pick $n 3]; :local cm [:pick $n 4]
   :local f [/ip/dhcp-server/network/find where address=$sub]
   :if ([:len $f] = 0) do={
-    /ip/dhcp-server/network/add address=$sub gateway=$gw dns-server=$dns comment=$cm
+    /ip/dhcp-server/network/add address=$sub gateway=$gw dns-server=$dns comment=$cm netmask=24
   } else={
-    /ip/dhcp-server/network/set $f gateway=$gw dns-server=$dns comment=$cm
+    # netmask is an explicit override and does NOT follow the address - changing
+    # the address alone leaves clients with the old mask.
+    /ip/dhcp-server/network/set $f gateway=$gw dns-server=$dns comment=$cm netmask=24
   }
   :if ($dom != "") do={
     /ip/dhcp-server/network/set [/ip/dhcp-server/network/find where address=$sub] domain=$dom
@@ -188,6 +190,42 @@
 } else={
   /interface/pppoe-client/set $pppoe interface=vlan848-isp add-default-route=yes \
     max-mtu=1492 max-mru=1492 disabled=no
+}
+
+# -------------------------------------------------- vlan isolation (iot/guest)
+# IoT and guest may reach the internet but must not initiate connections into
+# any other VLAN. Traffic in the other direction still works: the defconf
+# "accept established,related" rule sits ahead of these drops, so replies to
+# connections started from mgmt/lab/vms flow normally.
+#
+# These rules only need to exist on the router because it is the only L3 hop
+# for vlan20 and vlan30 — the CRS310 has no address on those VLANs.
+
+:foreach n in={"192.168.0.0/24";"10.0.10.0/24";"10.0.20.0/24";"10.0.30.0/24";"10.0.40.0/24"} do={
+  :if ([:len [/ip/firewall/address-list/find where list="internal" and address=$n]] = 0) do={
+    /ip/firewall/address-list/add list=internal address=$n \
+      comment="RFC1918 segments - used by VLAN isolation rules"
+  }
+}
+:local fb [/ip/firewall/address-list/find where list="fallback-lan"]
+:if ([:len $fb] > 0) do={ /ip/firewall/address-list/set $fb address=192.168.0.0/24 }
+
+# MUST come before the IoT drop. Five IoT devices hold long-lived MQTT sessions
+# to mosquitto in k3s; without this, Home Assistant silently loses every sensor.
+:if ([:len [/ip/firewall/filter/find where comment="iot: allow MQTT to broker"]] = 0) do={
+  /ip/firewall/filter/add chain=forward action=accept in-interface=vlan20-iot \
+    dst-address=10.0.40.0/24 protocol=tcp dst-port=1883 \
+    comment="iot: allow MQTT to broker"
+}
+:if ([:len [/ip/firewall/filter/find where comment="isolate iot from other VLANs"]] = 0) do={
+  /ip/firewall/filter/add chain=forward action=drop in-interface=vlan20-iot \
+    dst-address-list=internal log=yes log-prefix=iot-drop \
+    comment="isolate iot from other VLANs"
+}
+:if ([:len [/ip/firewall/filter/find where comment="isolate guest from other VLANs"]] = 0) do={
+  /ip/firewall/filter/add chain=forward action=drop in-interface=vlan30-guest \
+    dst-address-list=internal log=yes log-prefix=guest-drop \
+    comment="isolate guest from other VLANs"
 }
 
 # ----------------------------------------------------------------- system

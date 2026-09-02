@@ -77,11 +77,11 @@
 }
 
 # ------------------------------------------------------------ addressing
-# NOTE: the live device also carries a second 192.168.0.3 on the bridge as a
-# /24 alongside the /16 on vlan1-mgmt. That is redundant; only the vlan1-mgmt
-# address is reproduced here. Add the bridge one back if something depends on it.
+# The device previously carried 192.168.0.3 twice: a /24 on the bridge and a
+# /16 on vlan1-mgmt. The duplicate was removed and management unified on a
+# single /24 here. 10.0.10.2 doubles as an out-of-band path if mgmt breaks.
 :local addrs {
-  {"192.168.0.3/16";"vlan1-mgmt";"mgmt"};
+  {"192.168.0.3/24";"vlan1-mgmt";"mgmt"};
   {"10.0.10.2/24";"vlan10-lab";"hosts"};
   {"10.0.40.2/24";"vlan40-vms";"l3-routing"}
 }

@@ -37,18 +37,33 @@ Only `ether2` is live on the router — everything else hangs off the switch.
 
 | VLAN | Name | Subnet | Gateway | DHCP pool | DHCP DNS | Purpose |
 |---|---|---|---|---|---|---|
-| 1 | mgmt | 192.168.0.0/16 | 192.168.0.1 | .50–.150 | 192.168.0.1 | Device management |
+| 1 | mgmt | 192.168.0.0/24 | 192.168.0.1 | .50–.150 | 192.168.0.1 | Device management |
 | 10 | lab | 10.0.10.0/24 | 10.0.10.1 | .50–.200 | 192.168.0.1 | Workstations, hypervisors, Pis |
 | 20 | iot | 10.0.20.0/24 | 10.0.20.1 | .50–.254 | 10.0.20.1 | Printers, robot, cameras |
 | 30 | guest | 10.0.30.0/24 | 10.0.30.1 | .50–.200 | 1.1.1.1, 8.8.8.8 | Guest Wi-Fi — public DNS by design |
 | 40 | vms | 10.0.40.0/24 | 10.0.40.1 | .50–.200 | 10.0.40.1 | VMs, k3s nodes, NAS |
 | 848 | isp | — | — | — | — | PPPoE transport to O2 |
 
-Search domain handed out on vlan10 and 192.168.0.0/16 is `lan.jehli.net`.
+Search domain handed out on vlan10 and the mgmt /24 is `lan.jehli.net`.
 
-**VLANs are not isolated from each other.** The forward chain has no inter-VLAN drop, so any
-host can reach any other over TCP. ICMP between VLANs is not accepted, which makes `ping`
-misleading as a reachability test — use TCP.
+### Isolation
+
+**iot (20) and guest (30) cannot initiate connections into any other VLAN.** They reach the
+internet normally, and mgmt, lab and vms reach *into* them freely — the defconf
+"accept established,related" rule sits ahead of the drops, so replies flow.
+
+One exception, and it matters: **IoT is allowed to 10.0.40.0/24 tcp/1883**. Five IoT devices
+hold long-lived MQTT sessions to mosquitto in k3s; without that rule Home Assistant silently
+loses every sensor. Verified with rule counters — the MQTT accept matched, the drop caught
+everything else.
+
+The drops log as `iot-drop` and `guest-drop`. A connection-table snapshot cannot reveal
+periodic traffic (nightly firmware checks, scheduled jobs), so watch
+`/log print where message~"drop"` for a week and add exceptions before assuming it is clean.
+Turn the logging off afterwards if it is noisy.
+
+mgmt (1), lab (10) and vms (40) are **not** isolated from each other. ICMP between VLANs is
+never accepted, which makes `ping` a misleading reachability test — use TCP.
 
 ## Devices
 
@@ -114,11 +129,12 @@ mDNS is repeated by the router across vlan10, vlan20 and vlan40, which is what m
 - **CGNAT.** The PPPoE WAN address is RFC1918, so inbound port forwarding cannot work. This
   is why ingress is Cloudflare Tunnel (outbound-only). Four `dstnat` rules for 80/443/6881 →
   10.0.40.102 are left over from before and can never fire.
-- **`192.168.0.0/16` is a /16.** Only `.50–.150` is used. Treat it as a /24 for anything that
-  advertises routes (VPN, Tailscale) — advertising the /16 would swallow every foreign
-  192.168.x.x network you connect from.
-- **Management is flat.** The input chain has no drop rule, so every VLAN — including guest —
-  can reach the router's services. Restrict with `/ip service address=` if that matters.
+- **Management is a /24** on all three devices. It was a /16 until 2026-09-02; the five
+  192.168.x.x ARP entries outside the /24 turned out to be incomplete entries with no MAC and
+  no ping reply, not real hosts.
+- **Management is still flat at the input chain.** The VLAN isolation above is `forward` only,
+  so guest and IoT can still reach the *router's own* services (SSH, Winbox, DNS). Restrict
+  with `/ip service address=192.168.0.0/24,10.0.10.0/24` to close that.
 
 ## Scripts
 
@@ -127,8 +143,9 @@ above: bridges, VLANs, addressing, DHCP, DNS, Wi-Fi. They are **idempotent** —
 find-then-add-or-update, so re-running converges rather than duplicating.
 
 They deliberately do **not** cover: defconf firewall rules, PPPoE credentials, Wi-Fi
-passphrases, or per-host DHCP leases. Those are either secret or site-specific; passphrases
-appear as `CHANGEME` placeholders.
+passphrases, or per-host DHCP leases — those are secret or site-specific. The AP script does
+not invent placeholder passphrases; it warns if a security profile has none set, so importing
+it cannot silently leave an open SSID.
 
 Intended for rebuild and disaster recovery, and as an executable description of intent. To
 apply, upload and run:

@@ -133,9 +133,9 @@
 # --------------------------------------------------- management addressing
 :local a [/ip/address/find where interface="vlan1-mgmt" and !dynamic]
 :if ([:len $a] = 0) do={
-  /ip/address/add address=192.168.0.4/16 interface=vlan1-mgmt comment=mgmt
+  /ip/address/add address=192.168.0.4/24 interface=vlan1-mgmt comment=mgmt
 } else={
-  /ip/address/set $a address=192.168.0.4/16 comment=mgmt
+  /ip/address/set $a address=192.168.0.4/24 comment=mgmt
 }
 /ip/dns/set servers=192.168.0.1
 :if ([:len [/ip/route/find where dst-address="0.0.0.0/0" and gateway="192.168.0.1"]] = 0) do={
