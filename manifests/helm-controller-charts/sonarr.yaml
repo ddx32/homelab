@@ -12,7 +12,7 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: sonarr
   targetNamespace: media-stack
-  version: 0.1.0
+  version: 0.1.1
   valuesContent: |-
     nfs:
       server: 10.0.40.201
