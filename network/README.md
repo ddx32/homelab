@@ -1,7 +1,8 @@
 # Network
 
-Reference for the physical and logical network. The `.rsc` files here are idempotent
-RouterOS scripts that reproduce the documented state — see [Scripts](#scripts).
+Reference for the physical and logical network — topology, addressing, and the reasoning an
+`/export` cannot capture. The `*.export.rsc` files are sanitised config snapshots from the
+live devices, refreshed by `./refresh-exports.sh`.
 
 ## Topology
 
@@ -168,23 +169,22 @@ removes the drop rule after a few minutes — verify access, then delete the sch
 /system scheduler add name=fwrollback interval=4m on-event="/ip firewall filter remove [find log-prefix=inputdrop]; /system scheduler remove [find name=fwrollback]"
 ```
 
-## Scripts
+## Config snapshots
 
-`router-rb750gr3.rsc`, `switch-crs310.rsc`, `ap-hap-ax-s.rsc` reproduce the structural config
-above: bridges, VLANs, addressing, DHCP, DNS, Wi-Fi. They are **idempotent** — every change is
-find-then-add-or-update, so re-running converges rather than duplicating.
+`*.export.rsc` are sanitised `/export` output from each device, refreshed by
+`./refresh-exports.sh`. They replaced hand-written idempotent scripts, which were 2.6x
+longer, reproduced only part of the config (7 of 23 filter rules, 0 of 5 NAT rules — so
+importing one gave a router with no internet), and could silently drift. An export cannot
+drift: it *is* the device.
 
-They deliberately do **not** cover: defconf firewall rules, PPPoE credentials, Wi-Fi
-passphrases, or per-host DHCP leases — those are secret or site-specific. The AP script does
-not invent placeholder passphrases; it warns if a security profile has none set, so importing
-it cannot silently leave an open SSID.
+Run the script after changing any MikroTik, then commit the diff. It refuses to write if a
+secret appears.
 
-Intended for rebuild and disaster recovery, and as an executable description of intent. To
-apply, upload and run:
+**This repo is public.** Plain `/export` already hides passphrases, PPPoE passwords and API
+tokens — verified: `/export show-sensitive` reveals 3 Wi-Fi passphrase lines, plain `/export`
+reveals none. It does *not* hide the serial number or PPPoE username, so the script strips
+those. Never add `show-sensitive`.
 
-```sh
-scp -P 2200 network/router-rb750gr3.rsc admin@10.0.10.1:
-ssh -p 2200 admin@10.0.10.1 '/import file-name=router-rb750gr3.rsc'
-```
-
-Review the diff against a live `/export` before running against a working device.
+Snapshots are a reference and a rebuild aid, not a deployment mechanism — `/import` of a full
+export onto a live device is not idempotent. For a rebuild, restore a `/system backup` and use
+the export to diff against. This file carries the *why*; the export carries the *what*.
