@@ -323,18 +323,28 @@ out `domain=cdglan.org` as a search domain on vlan10-lab and 192.168.0.0/16 — 
   `10.0.40.102`. Tailnet clients need a route to `10.0.40.0/24`, so either a subnet router or
   put a tailscale node on that subnet.
 
+### Router follow-ups — done 2026-09-02
+
+- **DHCP DNS repointed.** `vlan20-iot` and `vlan40-vms` were handing out `1.1.1.1,8.8.8.8`,
+  so anything taking a lease there bypassed the router and could not resolve `lan.jehli.net`.
+  Now each hands out its own gateway (`10.0.20.1`, `10.0.40.1`) — verified both answer LAN
+  names and recurse to the internet. `vlan30-guest` deliberately still uses public resolvers.
+  The firewall `input` chain has no drop rule, so every VLAN can already reach the router's
+  DNS; this needed no firewall change.
+- **mDNS repeat now includes `vlan40-vms`.** `nas.local` resolves from the lab VLAN and
+  `_smb._tcp` advertises as "nas - SMB/CIFS". This is a **cluster-independent** path to the
+  NAS: it keeps working when kube-captain is down and `lan.jehli.net` does not.
+- **duckdns removed.** A dormant script from a previous config (`run-count=2`,
+  `last-started=2023-11-12`, referencing an `interface=MATRIX` that no longer exists) holding
+  a live API token. No scheduler or netwatch referenced it. Script deleted; router now has
+  zero scripts and zero schedulers, and no `token=` remains in the running config.
+
+  **The token is not revoked by deleting the script.** Rotate or delete it at duckdns.org —
+  and note two binary backups on the router's flash predate the removal and will still
+  contain it: `flash/Godfrey-20240212-2128.backup` and `flash/auto-before-reset.backup`.
+
 ### Router items found but NOT changed
 
-- **vlan40-vms and vlan20-iot hand out `dns-server=1.1.1.1,8.8.8.8` via DHCP.** Anything
-  taking a DHCP lease on those VLANs bypasses the router entirely and cannot resolve
-  `lan.jehli.net`. The cluster nodes are unaffected only because their resolver is statically
-  set to `192.168.0.1`. Point those at `10.0.10.1` if you want LAN names on those VLANs.
-- **`mdns-repeat-ifaces` covers `vlan10-lab` and `vlan20-iot` but not `vlan40-vms`**, which is
-  why `nas.local` never resolved from the lab VLAN — the NAS is on vlan40. Add vlan40 there if
-  you want mDNS as a fallback path.
-- **A dormant `duckdns` script** holds a live API token in the config. `run-count=2`,
-  `last-started=2023-11-12`, and no scheduler entry references it — it has not run in almost
-  three years. Worth deleting and rotating the token, which is exposed in every config export.
 - **`router.lan -> 192.168.88.1`** is leftover MikroTik `defconf`; that address is not in use.
 
 Zone choice: `lan.jehli.net` is a subdomain of a domain you own, so it can never collide with
