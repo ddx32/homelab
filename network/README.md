@@ -4,6 +4,8 @@ Reference for the physical and logical network — topology, addressing, and the
 `/export` cannot capture. The `*.export.rsc` files are sanitised config snapshots from the
 live devices, refreshed by `./refresh-exports.sh`.
 
+Hypervisors, VMs and the Kubernetes cluster are in [`../SERVERS.md`](../SERVERS.md).
+
 ## Topology
 
 ```
