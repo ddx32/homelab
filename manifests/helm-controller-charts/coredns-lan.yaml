@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-services
+---
+# Local-only authoritative DNS for LAN infrastructure names.
+#
+# Replaces the old bind deployment, which served the retired cdglan.org zone. This one is
+# deliberately smaller: a single zone of static A records for hosts that need to be reachable
+# by name on the LAN (SMB, NFS, SSH) - things that are NOT Kubernetes resources and so cannot
+# come from an ingress.
+#
+# It is NOT a general resolver. There is no `forward` plugin, so anything outside
+# lan.jehli.net returns NXDOMAIN and this can never be abused as an open resolver. Clients
+# keep using the MikroTik for everything else; the router just forwards this one zone here.
+#
+# Cluster service hostnames are deliberately absent. Every ingress is cloudflare-tunnel and
+# has no LAN address, so pointing lan names at a LAN IP would resolve to something nothing
+# serves. If services are ever put behind ingress-nginx as well, add the k8s_gateway plugin
+# here and it will pick them up automatically.
+#
+# Router (MikroTik) needs one forward rule:  lan.jehli.net -> the LoadBalancer IP below.
+# Tailscale later: Split DNS, domain lan.jehli.net -> same IP (needs a subnet router or a
+# tailscale node on 10.0.40.0/24).
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: coredns-lan
+  namespace: homelab-services
+spec:
+  repo: https://coredns.github.io/helm
+  chart: coredns
+  targetNamespace: homelab-services
+  version: 1.47.0
+  valuesContent: |-
+    fullnameOverride: coredns-lan
+    # Two replicas: name resolution for the NAS should survive a node drain.
+    replicaCount: 2
+    serviceType: LoadBalancer
+    service:
+      name: coredns-lan
+    servers:
+      - zones:
+          - zone: lan.jehli.net.
+            use_tcp: true
+        port: 53
+        plugins:
+          - name: errors
+          - name: health
+            configBlock: |-
+              lameduck 10s
+          - name: ready
+          - name: hosts
+            configBlock: |-
+              10.0.40.201 nas.lan.jehli.net nas
+              10.0.40.102 kube-captain.lan.jehli.net kube-captain
+              10.0.40.104 kube-worker.lan.jehli.net kube-worker
+              10.0.40.100 librarian.lan.jehli.net librarian
+              10.0.10.4   pve.lan.jehli.net pve
+              10.0.10.5   holly.lan.jehli.net holly
+              10.0.20.230 printer-buddy.lan.jehli.net printer-buddy
+              ttl 300
+          - name: reload

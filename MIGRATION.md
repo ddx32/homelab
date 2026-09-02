@@ -275,6 +275,38 @@ Retiring a DNS zone breaks anything resolving through it, so this was verified f
 **MQTT username**, not a hostname. Renaming it would break every MQTT client — Home
 Assistant, ESPHome devices — so it stays.
 
+## Local DNS after bind (added 2026-09-02)
+
+bind is not coming back, but a few hosts still need names on the LAN — the NAS for SMB above
+all, since `nas.jehli.net` resolves to Cloudflare and is useless for file protocols.
+
+`manifests/helm-controller-charts/coredns-lan.yaml` deploys CoreDNS in `homelab-services`
+serving one zone, `lan.jehli.net`, from a static `hosts` block: nas, pve, holly, both kube
+nodes, librarian and printer-buddy. LoadBalancer on `10.0.40.102,10.0.40.104`, 2 replicas so
+resolution survives a node drain.
+
+It is **not** a resolver. There is no `forward` plugin and no `kubernetes` plugin, so anything
+outside its zone is `REFUSED` — verified against `google.com`, `example.com` and
+`nas.jehli.net`. It cannot be used as an open resolver or a DNS amplifier. Clients keep using
+the MikroTik for everything else.
+
+Cluster service names are deliberately not served. Every ingress is cloudflare-tunnel with no
+LAN address, so a LAN name would resolve to something nothing serves — worse than hairpinning
+through Cloudflare. If services are ever also put behind ingress-nginx (still deployed, still
+with zero ingresses), add the `k8s_gateway` plugin and it picks them up with no manual records.
+
+### Remaining wiring
+
+- **MikroTik**: forward the zone `lan.jehli.net` to `10.0.40.102` (and `10.0.40.104` as a
+  second entry). Nothing resolves these names through the normal client path until this exists.
+- **Tailscale** (not installed anywhere yet): Split DNS, domain `lan.jehli.net`, nameserver
+  `10.0.40.102`. Tailnet clients need a route to `10.0.40.0/24`, so either a subnet router or
+  put a tailscale node on that subnet.
+
+Zone choice: `lan.jehli.net` is a subdomain of a domain you own, so it can never collide with
+public DNS, and it does not shadow any Cloudflare record — deliberately *not* overriding
+`nas.jehli.net`, which would create split-horizon and bypass Cloudflare Access from the LAN.
+
 ## The NAS
 
 Already fully migrated; nothing was needed here:
