@@ -50,6 +50,16 @@ entries:
   cert-manager-setup:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2026-09-02T12:25:36.177032351Z"
+    description: Custom issuers and secrets for generating a let's encrypt cert
+    digest: c90195a9e57d382f6f60fe5cbd84b271092ef4a0c0aa31a4a0c32d808cfbbd3a
+    name: cert-manager-setup
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/cert-manager-setup-0.1.4/cert-manager-setup-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2026-09-01T23:20:16.409411+02:00"
     description: Custom issuers and secrets for generating a let's encrypt cert
     digest: 56aef29e6db438532fdd84ce30d9c1895e8f06917240c9001947af465bdc3537
@@ -477,4 +487,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-09-01T23:20:16.408459+02:00"
+generated: "2026-09-02T12:25:36.177244067Z"
