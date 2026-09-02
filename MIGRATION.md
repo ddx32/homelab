@@ -1,8 +1,21 @@
 # cdglan.org → jehli.net migration
 
-Status: **Phases 1 and 2 are applied and verified.** All 14 NFS PVs point at `10.0.40.201`,
-and no cloudflare-tunnel ingress carries cert-manager config any more. Phase 3 (retire
-cdglan.org) is still outstanding.
+Status: **All three phases are applied and verified.** All 14 NFS PVs point at
+`10.0.40.201`, no ingress carries cert-manager config, and nothing in the cluster serves or
+resolves `cdglan.org`.
+
+> **OPEN SECURITY ITEM.** `prometheus.jehli.net` and `alertmanager.jehli.net` are now
+> reachable from the internet with **no authentication**. Verified live: an unauthenticated
+> `GET /api/v1/query?query=up` returns real metrics, and `GET /api/v2/status` returns the
+> Alertmanager config. No credentials are exposed (the config is stock, `api_url` fields are
+> null defaults), but metrics reveal internal IPs and Alertmanager's API can create silences.
+> **Add Cloudflare Access policies for both hostnames.** Access on `jehli.net` is
+> per-application, not a wildcard. To close the hole immediately instead, set
+> `enabled: false` on those two ingresses in `kube-prometheus-stack.yaml` and re-apply.
+
+One remaining manual step: **remove the `cdglan.org` forward rule on the router**
+(`192.168.0.1`, web UI only). Until then the router keeps answering from cache — the zone's
+TTL was 2 days, so it expires on its own. Nothing depends on it either way.
 
 ## Why NFS moved to an IP, not a name
 
@@ -16,7 +29,7 @@ and a name is what wedged the cluster on 2026-09-01 (hard NFS mounts on an unrea
 `omv.cdglan.org` put the node in permanent D-state for ~15h). All NFS references are now
 literal IPs.
 
-## What is already done (repo only)
+## Summary of the change set
 
 - All 13 `omv.cdglan.org` references → `10.0.40.201` (11 manifests + 2 ansible tasks).
 - `manifests/helm-controller-charts/deluge.yaml` re-synced with the cluster. It had drifted
@@ -212,41 +225,66 @@ needs a chart release first, so do it second.
    ClusterIssuer solver to `jehli.net` finally let them issue, after years of failing. They
    were still unused, since TLS terminates at Cloudflare.
 
-### Still outstanding after Phase 2
+### Follow-up, resolved in Phase 3
 
-`cert-manager/le-test-cdglan-org` is still `Ready=False` and cannot ever issue — it is
-hardcoded to `le-test.cdglan.org` in `helm/cert-manager/templates/test-certificate.yaml`,
-and that domain is not in Cloudflare. Either point it at a `jehli.net` name or drop the
-template; it needs a chart version bump either way. The three `monitoring` Certificates were
-deliberately left alone.
+`cert-manager/le-test-cdglan-org` could never issue — hardcoded to `le-test.cdglan.org`,
+which is not in Cloudflare. It turned out to be a smoke-test certificate from the original
+2023-11-01 setup, pointed at the *staging* issuer and referenced by nothing. Its template was
+removed from the chart (`cert-manager-setup` 0.1.4) and the leftover secret deleted.
 
-## Phase 3 — retire cdglan.org
+`skip_existing: true` was also added to `.github/workflows/helm-release.yaml`, so a chart
+edited without a version bump no longer aborts the entire release run.
 
-Not started; these are still on `cdglan.org` and were deliberately left alone:
+## Phase 3 — retire cdglan.org — **DONE 2026-09-02**
 
-| ingress | class | note |
-|---|---|---|
-| `monitoring/kube-prometheus-stack-grafana` | *(none)* | no `ingressClassName` — **no controller serves it** |
-| `monitoring/…-prometheus` | *(none)* | same |
-| `monitoring/…-alertmanager` | *(none)* | same |
+`cdglan.org` is gone from the cluster. What was done:
 
-The three monitoring ingresses have never worked; they are declared in
-`manifests/helm-controller-charts/kube-prometheus-stack.yaml`.
+- **bind removed entirely.** It served exactly one zone, `cdglan.org` (`internal` is an ACL,
+  not a zone), and nothing resolved through it — both nodes point at the router. Its only
+  remaining purpose was `omv.cdglan.org`, which Phase 1 made obsolete by moving every NFS
+  volume to the literal IP. Deleting the HelmChart tore down the deployment, the ConfigMaps
+  and the LoadBalancer that had been holding port 53 on both nodes. `manifests/helm-controller-charts/bind.yaml`
+  is deleted; `helm/bind` is kept in git so the chart can be redeployed if wanted.
+- **Monitoring moved to jehli.net on cloudflare-tunnel.** `grafana`, `prometheus` and
+  `alertmanager` now use `ingressClassName: cloudflare-tunnel` and `*.jehli.net`. They had
+  never worked because they set the deprecated `kubernetes.io/ingress.class` annotation
+  instead of `spec.ingressClassName`, which modern ingress-nginx ignores — so no controller
+  ever claimed them. See the security note at the top of this file.
+- **All cert-manager Certificates are gone.** Cluster-wide count is now zero, including
+  `le-test-cdglan-org` — a smoke-test cert from the original 2023-11-01 setup, pointed at the
+  *staging* issuer and referenced by nothing. Its template was removed from the chart.
+- **Node hostnames updated.** Both nodes had `127.0.1.1 <node>.cdglan.org`; now
+  `<node>.jehli.net`. Backups at `/etc/hosts.bak-cdglan` on each. The `search cdglan.org`
+  lines in `resolv.conf` were already commented out.
 
-`default/homer` used to be the fourth entry here. It was torn down on 2026-09-01 — it was the
-only `nginx`-class Ingress, so `ingress-nginx` now has zero consumers (see the note in
-`manifests/helm-controller-charts/nginx-ingress-controller.yaml`).
+### Checked before removing the zone
 
-Remaining cdglan.org tail:
+Retiring a DNS zone breaks anything resolving through it, so this was verified first:
 
-- `manifests/helm-controller-charts/bind.yaml` still serves the `cdglan.org` zone
-  (`ns`, `omv`, `grafana`, `prometheus`, `homeassistant`, `adminer`, `deluge`, `esphome`,
-  `homebridge` — the `homer` record was removed with the teardown). Once Phase 1 lands,
-  nothing in k8s depends on `omv.cdglan.org`.
-- The router at `192.168.0.1` forwards `cdglan.org` → bind (its SOA serial `2023120512`
-  matches `bind.yaml`). That forward rule is the last thing to remove, and it is web-UI only
-  — no SSH.
-- `kube-captain:/etc/hosts` still has `127.0.1.1 kube-captain.cdglan.org`.
+- No k8s PV, ingress or pod references `cdglan.org`.
+- `pve` and `holly` have no NFS mounts and no `cdglan` in `/etc/fstab`.
+- `pve`'s corosync uses literal `ring0_addr: 10.0.10.4/10.0.10.5`, not hostnames —
+  `cluster_name: cdglan` is only a label. Cluster stayed Quorate.
+- `pve:/etc/hosts` has a static `10.0.10.4 pve.cdglan.org` entry that resolves locally
+  regardless of DNS.
+- The NAS already identifies as `nas.jehli.net` and has no `cdglan` in its fstab.
+
+### Still on cdglan.org, deliberately
+
+`manifests/helm-controller-charts/mosquitto.yaml` has `passwd: "cdglan:..."`. That is an
+**MQTT username**, not a hostname. Renaming it would break every MQTT client — Home
+Assistant, ESPHome devices — so it stays.
+
+## The NAS
+
+Already fully migrated; nothing was needed here:
+
+- The host identifies as `nas.jehli.net`.
+- Its web UI is exposed at `nas.jehli.net` **behind Cloudflare Access** (verified: redirects
+  to `jehlici.cloudflareaccess.com/.../nas.jehli.net`).
+- Only HTTP is exposed. The path is ingress → `openmediavault:9062` → the nginx-proxy pod →
+  `10.0.40.201:80`. NFS and SMB are not routed through the tunnel, as intended — use
+  Tailscale for those.
 
 ## Teardown: homer and frigate (done 2026-09-01)
 

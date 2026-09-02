@@ -25,5 +25,9 @@ jobs:
         uses: helm/chart-releaser-action@main
         with:
           charts_dir: helm
+          # Without this a chart edited without a version bump aborts the whole
+          # run on "tag_name already_exists", leaving later charts unreleased
+          # and index.yaml never regenerated.
+          skip_existing: true
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}

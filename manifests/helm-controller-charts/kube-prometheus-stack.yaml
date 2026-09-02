@@ -16,39 +16,27 @@ spec:
   valuesContent: |-
     fullnameOverride: kube-prometheus-stack
     namespaceOverride: monitoring
+    # TLS terminates at Cloudflare, so no tls: block and no cert-manager annotation.
+    # These previously used the deprecated kubernetes.io/ingress.class annotation, which
+    # modern ingress-nginx ignores - that is why no controller ever served them.
+    #
+    # SECURITY: Prometheus and Alertmanager have no built-in authentication. Both need a
+    # Cloudflare Access policy; Access on jehli.net is per-application, not a wildcard.
     prometheus:
       ingress:
         enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx
-          cert-manager.io/cluster-issuer: letsencrypt-production
+        ingressClassName: cloudflare-tunnel
         hosts:
-          - prometheus.cdglan.org
-        tls:
-          - secretName: prometheus-tls
-            hosts:
-              - prometheus.cdglan.org
+          - prometheus.jehli.net
     grafana:
       ingress:
         enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx
-          cert-manager.io/cluster-issuer: letsencrypt-production
+        ingressClassName: cloudflare-tunnel
         hosts:
-          - grafana.cdglan.org
-        tls:
-          - secretName: grafana-tls
-            hosts:
-              - grafana.cdglan.org
+          - grafana.jehli.net
     alertmanager:
       ingress:
         enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx
-          cert-manager.io/cluster-issuer: letsencrypt-production
+        ingressClassName: cloudflare-tunnel
         hosts:
-          - alertmanager.cdglan.org
-        tls:
-          - secretName: alertmanager-tls
-            hosts:
-            - alertmanager.cdglan.org
+          - alertmanager.jehli.net
