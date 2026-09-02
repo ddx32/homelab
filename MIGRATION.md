@@ -295,13 +295,47 @@ LAN address, so a LAN name would resolve to something nothing serves — worse t
 through Cloudflare. If services are ever also put behind ingress-nginx (still deployed, still
 with zero ingresses), add the `k8s_gateway` plugin and it picks them up with no manual records.
 
-### Remaining wiring
+### MikroTik wiring — done 2026-09-02
 
-- **MikroTik**: forward the zone `lan.jehli.net` to `10.0.40.102` (and `10.0.40.104` as a
-  second entry). Nothing resolves these names through the normal client path until this exists.
+The router is a single MikroTik (RouterOS 7.24) with both `10.0.10.1` and `192.168.0.1` on it;
+SSH is on **port 2200**, not 22. Config exports taken before and after.
+
+```
+/ip dns static add name=lan.jehli.net type=FWD forward-to=10.0.40.102 match-subdomain=yes
+```
+
+**`forward-to` must be a single IP.** A comma-separated list is accepted by the parser but
+every query then returns `SERVFAIL` — confirmed by testing. A second entry for `10.0.40.104`
+exists but is **disabled**: RouterOS only ever uses the first matching static entry, so it
+gives no automatic failover (verified by pointing the primary at a dead IP — queries timed
+out rather than falling through). Treat it as a manual switch, not HA.
+
+That means `lan.jehli.net` resolution depends on `kube-captain` being up. If it is down, use
+IP addresses, or flip the two entries. Real redundancy would need a floating VIP for the
+CoreDNS service rather than k3s servicelb's per-node IPs.
+
+Removed at the same time: four dead `cdglan.org` static entries, one of which was still
+active and forwarding `.+\.cdglan\.org` to the deleted bind LoadBalancer. DHCP was handing
+out `domain=cdglan.org` as a search domain on vlan10-lab and 192.168.0.0/16 — now
+`lan.jehli.net`, which also makes bare `nas` work once clients renew their lease.
+
 - **Tailscale** (not installed anywhere yet): Split DNS, domain `lan.jehli.net`, nameserver
   `10.0.40.102`. Tailnet clients need a route to `10.0.40.0/24`, so either a subnet router or
   put a tailscale node on that subnet.
+
+### Router items found but NOT changed
+
+- **vlan40-vms and vlan20-iot hand out `dns-server=1.1.1.1,8.8.8.8` via DHCP.** Anything
+  taking a DHCP lease on those VLANs bypasses the router entirely and cannot resolve
+  `lan.jehli.net`. The cluster nodes are unaffected only because their resolver is statically
+  set to `192.168.0.1`. Point those at `10.0.10.1` if you want LAN names on those VLANs.
+- **`mdns-repeat-ifaces` covers `vlan10-lab` and `vlan20-iot` but not `vlan40-vms`**, which is
+  why `nas.local` never resolved from the lab VLAN — the NAS is on vlan40. Add vlan40 there if
+  you want mDNS as a fallback path.
+- **A dormant `duckdns` script** holds a live API token in the config. `run-count=2`,
+  `last-started=2023-11-12`, and no scheduler entry references it — it has not run in almost
+  three years. Worth deleting and rotating the token, which is exposed in every config export.
+- **`router.lan -> 192.168.88.1`** is leftover MikroTik `defconf`; that address is not in use.
 
 Zone choice: `lan.jehli.net` is a subdomain of a domain you own, so it can never collide with
 public DNS, and it does not shadow any Cloudflare record — deliberately *not* overriding
