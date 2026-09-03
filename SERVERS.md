@@ -126,9 +126,10 @@ tailscale up --advertise-routes=10.0.10.0/24,10.0.20.0/24,10.0.40.0/24,192.168.0
 
 `--accept-dns=false` keeps the router itself off MagicDNS, avoiding resolution loops.
 
-Two steps must happen in the **admin console**, not here: approve the advertised subnet
-routes (they do nothing until approved) and disable key expiry on this node, or it drops off
-the tailnet in 90 days.
+**Live since 2026-09-03**: authenticated as `homelab-subnet-router`, tailnet IP
+`100.116.69.45`, all four routes approved, key expiry disabled. Verified it reaches a host in
+every advertised subnet — including SMB on the NAS — and that `tailscaled` is enabled at boot
+alongside `onboot: 1` on the container, so it survives a host reboot.
 
 For LAN names over the tunnel, add **Split DNS**: domain `lan.jehli.net`, nameserver
 `10.0.10.1` — the router, not CoreDNS directly, since the router is always up and forwards
@@ -180,10 +181,9 @@ a `/dev/ttyUSB0` hostPath — it cannot run on kube-worker.
 
 ## Single points of failure
 
-- **Tailscale is not yet authenticated.** CT 105 is built and `tailscale up` is pending a
-  login; until the node is approved and its routes accepted in the admin console, there is no
-  remote access. It is also a single subnet router — a second one on holly advertising the
-  same routes would fail over automatically.
+- **One subnet router, on pve.** If pve is down, so is remote access — and pve also holds the
+  only k3s control plane. A second Tailscale node on holly advertising the same routes would
+  fail over automatically.
 - **holly carries both `kube-worker` and the NAS.** Losing holly takes storage away from the
   whole cluster, including pods running on kube-captain. This is the largest one.
 - **`kube-captain` is the only control plane**, and it hosts `lan.jehli.net` resolution via
