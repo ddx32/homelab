@@ -13,9 +13,10 @@ operational notes are in [`MIGRATION.md`](MIGRATION.md).
         │   .10 → 10.0.10.4  mgmt │          │  .10 → 10.0.10.5   mgmt │
         │   .40 → 10.0.40.4   vms │          │  .40 → 10.0.40.5    vms │
         ├─────────────────────────┤          ├─────────────────────────┤
-        │ 102 kube-captain  k3s   │          │ 104 kube-worker    k3s  │
-        │ 105 tailscale (LXC)     │          │ 106 tailscale2 (LXC)    │
-        │ 9001 debian12-template  │          │ 201 omv    NAS + 4×8TB  │
+        │ 100 librarian  MariaDB  │          │ 104 kube-worker    k3s  │
+        │ 102 kube-captain  k3s   │          │ 106 tailscale2 (LXC)    │
+        │ 105 tailscale (LXC)     │          │ 201 omv    NAS + 4×8TB  │
+        │ 9001 debian12-template  │          │                         │
         └─────────────────────────┘          └─────────────────────────┘
                         all VMs tagged VLAN 40
 ```
@@ -29,6 +30,7 @@ and `onboot=1` unless noted.
 
 | ID | Name | Host | RAM/cores | Address | Role |
 |---|---|---|---|---|---|
+| 100 | **librarian** | pve | 1G / 1 | 10.0.40.100 | MariaDB — Home Assistant's recorder DB |
 | 102 | **kube-captain** | pve | 8G / 2 | 10.0.40.102 | k3s server (control plane) |
 | 105 | **tailscale** | pve | 512M / 1 | 10.0.40.105 | LXC — Tailscale subnet router |
 | 9001 | debian12-template | pve | — | — | template, not a running guest |
@@ -36,18 +38,48 @@ and `onboot=1` unless noted.
 | 106 | **tailscale2** | holly | 512M / 1 | 10.0.40.106 | LXC — Tailscale subnet router (HA pair) |
 | 201 | **omv** | holly | 4G / 3 | 10.0.40.201 | OpenMediaVault — NFS + SMB for everything |
 
-**Removed 2026-09-03:** `librarian` (100), `caddy` (103), `netconsole-rx` (101) and
-`avahi-reflect` (202). The first three ran but served nothing on 22/80/443/8080 from the lab
-VLAN; caddy predated the Cloudflare tunnel, and avahi-reflect was superseded by the MikroTik's
-own `mdns-repeat-ifaces`.
+**Removed 2026-09-03:** `caddy` (103), `netconsole-rx` (101) and `avahi-reflect` (202). caddy
+predated the Cloudflare tunnel and had nothing behind it; avahi-reflect was superseded by the
+MikroTik's own `mdns-repeat-ifaces`.
 
-`vzdump` archives were taken first and live in `/var/lib/vz/dump/` on their respective hosts —
-librarian 3.7G, caddy 488M, netconsole-rx 1.37G, avahi-reflect 617M. Delete them once you are
-satisfied nothing is missed. Keep librarian's longest: it had ~21G allocated at 65% thin
-usage, so it held real data.
+`vzdump` archives are in `/var/lib/vz/dump/` on their respective hosts — caddy 488M,
+netconsole-rx 1.37G, avahi-reflect 617M. Delete them once you are satisfied nothing is missed.
 
-That leaves only `kube-captain` and a template on pve, and `kube-worker` plus the NAS on
-holly. pve `local-lvm` went 51% → 23%.
+**`librarian` was deleted the same day and restored from its archive at 12:06.** It was *not*
+vestigial: it serves MariaDB on 3306 and Home Assistant on `kube-captain` uses it as the
+recorder backend, hard-coded to `10.0.40.100`. The removal was gated on a port scan of
+22/80/443/8080 — which does not include 3306 — so a database-only host looked identical to a
+dead one. `ansible/playbooks/db/{mysql,influxdb}.yaml` both say `hosts: librarian` and were in
+the repo the whole time; librarian was in the inventory but nothing connected the two.
+
+**Before deleting a VM, scan the ports its services would actually use, and grep the repo for
+its hostname.** Reachability on a handful of well-known ports is not evidence of disuse.
+
+Restore cost ~90 minutes of Home Assistant history (08:33–10:03). Nothing else was lost: HA
+holds its recorder queue in memory while the DB is unreachable and back-filled 10:03 onward on
+reconnect — verified by a contiguous `state_id` run across the gap.
+
+`librarian` used to answer only on its own subnet, which predated the restore and is now
+fixed. It is statically addressed at `.100`, outside the vlan40 DHCP pool (`10.0.40.50-99`),
+so it never received the `classless-v40-121` route option every DHCP client on vlan40 gets —
+`10.0.10.0/24 via 10.0.40.2` (the CRS310, `comment=l3-routing`). Replies to vlan10 sources
+went out the default gateway `10.0.40.1` instead, which does not hardware-route
+vlan10 ↔ vlan40, so they were dropped. Home Assistant never noticed, because `kube-captain`
+is on vlan40 too — but pings and `ansible librarian -m ping` from a vlan10 workstation timed
+out, which is why the host looked dead from two directions at once.
+
+The route is now a `post-up` line in `/etc/network/interfaces` (`ip route replace`, so it is
+idempotent; original saved as `interfaces.bak`). Verified with `ifquery ens18`, then a ping
+from `10.0.10.4` and `ansible librarian -m ping` from a workstation. **Any statically
+addressed host on vlan40 needs this route set by hand** — the DHCP option only reaches hosts
+inside the pool.
+
+`librarian` also runs InfluxDB 1.6.7, which holds **no user data** (`_internal` only). The 11G
+under `/var/lib/influxdb/engine/` belongs to `influxdb2`, whose package is removed (`rc`
+state) so the running 1.x server cannot see it. Last writes were 2024-02-25 (11G bucket) and
+2025-09-25 (30M bucket). That is dead weight, but confirm before reclaiming it.
+
+pve `local-lvm` sits at 38% with librarian back.
 
 ## How VLANs reach the VMs
 

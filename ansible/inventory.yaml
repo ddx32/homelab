@@ -10,6 +10,8 @@ jehlinet_hosts:
 
 jehlinet_vms:
   hosts:
+    librarian: # MariaDB - Home Assistant's recorder DB (see playbooks/db/)
+      ansible_host: 10.0.40.100
     omv:
       ansible_host: 10.0.40.201
     kube-captain:

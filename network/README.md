@@ -322,7 +322,7 @@ Every item below matches nothing on this network:
 | `/routing ospf instance`, `/routing bgp template` | no peers, no areas enabled. |
 | `/interface ovpn-server` | unused server offering `auth=sha1,md5`. |
 | `/ip dns static router.lan → 192.168.88.1` | defconf leftover; that subnet has not existed since 2026-09-02. Also on the AP. |
-| `/tool sniffer filter-ip-address=10.0.40.100/32` | that was `librarian`, deleted 2026-09-03. |
+| `/tool sniffer filter-ip-address=10.0.40.100/32` | sniffer is not running. `librarian` does still exist, so the filter is merely unused, not stale. |
 | `/interface wireless security-profiles`, `/interface lte apn` | the hEX has neither radio nor LTE. |
 
 `ether3/4/5` carry `ingress-filtering=no` while the bridge runs `vlan-filtering=yes` — only
