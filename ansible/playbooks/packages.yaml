@@ -1,12 +1,11 @@
-- name: Update apt cache
-  hosts: jehlinet_hosts,jehlinet_vms
-  become: true
-  tasks:
-    - name: Update apt cache
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 3600
-
+---
+# Patch every Debian host.
+#
+# Usage:
+#   cd ansible && ansible-playbook playbooks/packages.yaml
+#
+# `apt: upgrade` takes update_cache itself, so this needs one play, not three.
+# The Alpine play went with the avahi-reflect VM (removed 2026-09-03).
 - name: Upgrade all packages
   hosts: jehlinet_hosts,jehlinet_vms
   become: true
@@ -14,17 +13,7 @@
     - name: Perform full system upgrade
       ansible.builtin.apt:
         upgrade: full
-        autoclean: yes
-        autoremove: yes
-
-- name: Update Alpine packages
-  hosts: alpine_hosts
-  become: true
-  tasks:
-    - name: Update apk cache
-      ansible.builtin.apk:
-        update_cache: yes
-
-    - name: Upgrade all packages
-      ansible.builtin.apk:
-        upgrade: yes
+        update_cache: true
+        cache_valid_time: 3600
+        autoclean: true
+        autoremove: true

@@ -1,3 +1,4 @@
+# Connection defaults (user, key) live in ansible.cfg, not repeated per group.
 jehlinet_hosts:
   hosts:
     pve: # PVE host (HP mini PC)
@@ -6,23 +7,15 @@ jehlinet_hosts:
       ansible_host: 10.0.10.5
     printer-buddy: # RPi Zero W as a print/scanner server
       ansible_host: 10.0.20.230
-  vars:
-    ansible_user: jsolon
-    ansible_ssh_private_key_file: ~/.ssh/id_rsa
 
 jehlinet_vms:
   hosts:
-    librarian:
-      ansible_host: 10.0.40.100
     omv:
       ansible_host: 10.0.40.201
     kube-captain:
       ansible_host: 10.0.40.102
     kube-worker:
       ansible_host: 10.0.40.104
-  vars:
-    ansible_user: jsolon
-    ansible_ssh_private_key_file: ~/.ssh/id_rsa
 
 # k3s cluster role groups (hosts defined above in jehlinet_vms)
 k3s_server:
@@ -32,14 +25,3 @@ k3s_server:
 k3s_agents:
   hosts:
     kube-worker:
-
-alpine_hosts:
-  hosts:
-    # VM that runs avahi-reflect
-    reflector:
-      ansible_host: 10.0.10.165
-  vars:
-    ansible_user: root
-    ansible_ssh_private_key_file: ~/.ssh/id_rsa
-    ansible_python_interpreter: /usr/bin/python3
-    ansible_become: false

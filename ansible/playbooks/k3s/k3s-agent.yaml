@@ -12,7 +12,6 @@
   hosts: k3s_agents
   become: true
   vars:
-    k3s_version: "v1.27.6+k3s1"               # MUST match the running server version
     k3s_server_host: "{{ groups['k3s_server'][0] }}"
     k3s_server_url: "https://{{ hostvars[k3s_server_host].ansible_host }}:6443"
 
@@ -23,6 +22,22 @@
         state: present
         update_cache: true
         cache_valid_time: 3600
+
+    - name: Read the k3s version from the server
+      # Read, never pinned: a hardcoded version silently drifted to nine minor
+      # releases behind the server (v1.27.6 vs v1.36.2), and an agent must match.
+      ansible.builtin.command:
+        cmd: k3s --version
+      delegate_to: "{{ k3s_server_host }}"
+      register: k3s_server_version
+      changed_when: false
+      run_once: true
+
+    - name: Pin the install to the server's version
+      ansible.builtin.set_fact:
+        # "k3s version v1.36.2+k3s1 (01b6f04a)" -> "v1.36.2+k3s1"
+        k3s_version: "{{ k3s_server_version.stdout_lines[0].split()[2] }}"
+      run_once: true
 
     - name: Read the cluster node-token from the k3s server
       ansible.builtin.slurp:
