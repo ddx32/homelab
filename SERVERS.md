@@ -49,8 +49,9 @@ netconsole-rx 1.37G, avahi-reflect 617M. Delete them once you are satisfied noth
 vestigial: it serves MariaDB on 3306 and Home Assistant on `kube-captain` uses it as the
 recorder backend, hard-coded to `10.0.40.100`. The removal was gated on a port scan of
 22/80/443/8080 — which does not include 3306 — so a database-only host looked identical to a
-dead one. `ansible/playbooks/db/{mysql,influxdb}.yaml` both say `hosts: librarian` and were in
-the repo the whole time; librarian was in the inventory but nothing connected the two.
+dead one. `ansible/playbooks/db/mysql.yaml` says `hosts: librarian`, as did `influxdb.yaml`
+(since removed); both were in the repo the whole time. librarian was in the inventory, but
+nothing connected the two.
 
 **Before deleting a VM, scan the ports its services would actually use, and grep the repo for
 its hostname.** Reachability on a handful of well-known ports is not evidence of disuse.
@@ -74,12 +75,30 @@ from `10.0.10.4` and `ansible librarian -m ping` from a workstation. **Any stati
 addressed host on vlan40 needs this route set by hand** — the DHCP option only reaches hosts
 inside the pool.
 
-`librarian` also runs InfluxDB 1.6.7, which holds **no user data** (`_internal` only). The 11G
-under `/var/lib/influxdb/engine/` belongs to `influxdb2`, whose package is removed (`rc`
-state) so the running 1.x server cannot see it. Last writes were 2024-02-25 (11G bucket) and
-2025-09-25 (30M bucket). That is dead weight, but confirm before reclaiming it.
+**InfluxDB was removed from `librarian` 2026-09-03; MariaDB is the only database it serves.**
+Both packages are purged and `/var/lib/influxdb` is gone. The guest went 14G → 3.5G used.
 
-pve `local-lvm` sits at 38% with librarian back.
+The 11G that made librarian look data-heavy was InfluxDB 2's `_monitoring` bucket — its own Go
+runtime telemetry (`go_memstats_*`, `boltdb_reads_total`, `storage_writer_*`) with no retention
+policy, from Nov 2023 to 2024-02-25. Identified from the TSM index, not guessed. The running
+InfluxDB 1.6.7 had only `_internal`; it never held user data, because Home Assistant's
+integration is configured for `api_version: 2` and 1.6.7 does not speak that API.
+
+A 30M bucket of real HA sensor history (through 2025-09-25) was also lost — `apt-get purge
+influxdb` removes `/var/lib/influxdb` wholesale, so it went before it could be spared. It is
+recoverable from `vzdump-qemu-100-2026_09_03-08_33_40.vma.zst`; **keep that archive.**
+
+Follow-ups:
+
+- Home Assistant still has a dead `influxdb:` block in `configuration.yaml` pointing at
+  `10.0.40.100:8086`, bucket `homeassistant`. It has had nothing to talk to since influxdb2
+  was removed and now has no listener at all. Remove it or stand influxdb2 back up.
+- `scsi0` now has `discard=on`, but the change needs a VM power cycle before the guest's
+  `fstrim` reaches the thin pool. Until then `vm-100-disk-0` still reads 63% allocated and
+  `local-lvm` stays at 38% despite 26G being free inside the guest. Power-cycle then
+  `fstrim -av`.
+- `configuration.yaml` holds the MariaDB password and the old Influx token in plaintext, and
+  the recorder connects as `root`. Worth a dedicated user and `secrets.yaml`.
 
 ## How VLANs reach the VMs
 
