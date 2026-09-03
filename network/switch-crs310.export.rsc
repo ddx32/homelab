@@ -1,4 +1,4 @@
-# 2026-09-02 21:11:25 by RouterOS 7.24.1
+# 2026-09-03 12:09:03 by RouterOS 7.24.1
 #
 # model = CRS310-8G+2S+
 /interface bridge
@@ -42,8 +42,22 @@ add address=10.0.40.2/24 comment=l3-routing interface=vlan40-vms network=\
 set servers=10.0.10.1,1.1.1.1
 /ip route
 add comment=lan-gateway dst-address=0.0.0.0/0 gateway=10.0.10.1
+/ip service
+set ftp disabled=yes
+set ssh available-from=192.168.0.0/24,10.0.10.0/24
+set telnet disabled=yes
+set www available-from=192.168.0.0/24,10.0.10.0/24
+set reverse-proxy available-from=192.168.0.0/24,10.0.10.0/24
+set winbox available-from=192.168.0.0/24,10.0.10.0/24
+set api disabled=yes
+set api-ssl disabled=yes
 /system clock
 set time-zone-name=Europe/Prague
+/system ntp client
+set enabled=yes
+/system ntp client servers
+add address=10.0.10.1
+add address=time.google.com
 /system swos
 set address-acquisition-mode=static identity=Mikrotik-switch \
     static-ip-address=192.168.0.3

@@ -6,13 +6,61 @@ history. Network topology and router config live in [`network/`](network/README.
 
 ## Open items
 
+Re-verified live 2026-09-03. Ordered by consequence.
+
 > **`prometheus.jehli.net` and `alertmanager.jehli.net` are internet-reachable with no
-> authentication.** Verified live: unauthenticated `GET /api/v1/query?query=up` returns real
-> metrics, `GET /api/v2/status` returns the Alertmanager config. No credentials leak (the
-> config is stock), but metrics expose internal topology and the Alertmanager API can create
-> silences. **Add Cloudflare Access policies for both** — Access on `jehli.net` is
-> per-application, not a wildcard. To close it immediately instead, set `enabled: false` on
-> those two ingresses in `kube-prometheus-stack.yaml` and re-apply.
+> authentication.** Still open — confirmed again today: both return `HTTP 200`, and
+> `/api/v1/query?query=up` hands back real metrics naming internal endpoints
+> (`10.0.40.104:9100`), namespaces and job names. The Alertmanager API can create silences,
+> so anyone can mute your alerting. **Add Cloudflare Access policies for both** — Access on
+> `jehli.net` is per-application, not a wildcard. To close it immediately instead, set
+> `enabled: false` on those two ingresses in `kube-prometheus-stack.yaml` and re-apply.
+
+- **Proxmox has no quorum tiebreaker, and the tiebreaker is already racked.** `pvecm status`
+  reports `Expected votes: 2, Quorum: 2` — losing either host loses quorum, which is what
+  produced the `no quorum!` errors when both wedged on 2026-09-01. `overwatcher`, the RPi 4 on
+  `10.0.10.128`, is up and does nothing quorum-related. A qdevice makes it the third vote:
+
+  ```sh
+  # on overwatcher
+  sudo apt install corosync-qnetd
+  # on pve (once)
+  sudo apt install corosync-qdevice   # and on holly
+  sudo pvecm qdevice setup 10.0.10.128
+  ```
+
+  Best resilience-per-effort item in the setup, on hardware already running.
+
+- **LAN DNS no longer depends on the k3s control plane.** *(done 2026-09-03)* `coredns-lan`
+  was a two-replica CoreDNS behind a LoadBalancer whose entire zone was six A records for
+  fixed appliances, and the router's `type=FWD` entry pointed at `10.0.40.102` with no
+  failover — so `lan.jehli.net` died with kube-captain. The records now live in
+  `/ip dns static` on the router and the HelmChart is gone, removing a single point of
+  failure, a LoadBalancer on port 53, two pods and a layer of indirection.
+
+  **The precondition was checked, not assumed: nothing resolved against CoreDNS directly.**
+  `pve`, `holly`, `kube-captain` and `kube-worker` all point at the router (`192.168.0.1`);
+  the NAS uses `127.0.0.53`. Pods go via cluster CoreDNS (`10.43.0.10`), which forwards to the
+  node's upstream — the router again. Every lookup already traversed the router, so the static
+  records simply answer a hop earlier instead of being forwarded into the cluster.
+
+  Nothing was lost on short names: vlan20 and vlan40 are handed no `domain` option, and the
+  old `FWD` entry only matched `lan.jehli.net`, so a bare `nas` returned NXDOMAIN before the
+  change too. To get short names on vlan40, that is a separate one-liner
+  (`/ip dhcp-server network set [find comment=vlan40-vms] domain=lan.jehli.net`).
+
+  Verified after removal, with the chart deleted: all six names resolve from lab, from both
+  vlan40 hosts, and from inside a pod; kube-worker's 14 NFS mounts were untouched (they use
+  IPs). Cutover was a single batch — do not run the statics alongside the `FWD` entry, as
+  precedence between an exact-name static and a `match-subdomain` forward is ambiguous.
+
+  If cluster services ever move behind ingress-nginx and need *dynamic* names, that is the
+  case for bringing CoreDNS back with `k8s_gateway`. Today every ingress is cloudflare-tunnel
+  with no LAN address, so there is nothing to discover.
+
+- **`ingress-nginx` has zero consumers.** Re-confirmed: all 15 ingresses are
+  `cloudflare-tunnel`, and it still holds a LoadBalancer on 80/443 across both node IPs.
+  Remove it, or put something behind it.
 
 - **mosquitto persistence has never worked.** The chart renders `mosquitto.conf` with
   persistence enabled and provisions `mosquitto-pvc`, but the deployment never mounts that
@@ -20,12 +68,21 @@ history. Network topology and router config live in [`network/`](network/README.
   container-local storage and is discarded on every restart;
   `/export/ssd-data/mosquitto/data` on the NAS has been empty since Feb 2026. The fix and the
   evidence are in a `TODO` in `helm/mosquitto/templates/deployment.yaml`.
-- **`ingress-nginx` has zero consumers.** All 15 ingresses are `cloudflare-tunnel`. It still
-  runs and still holds a LoadBalancer on 80/443. Remove it, or put something behind it.
-- **No UPS monitoring on `pve`** (`nut-monitor` and `apcupsd` both inactive). Both hosts lost
-  power on 2026-09-01 after wedging for ~15h.
-- **NFS mounts are `hard`.** That is what turned a NAS stall into an uninterruptible node
-  hang rather than degraded pods. `soft`/`softreloc` would degrade instead.
+
+- **No UPS monitoring on `pve`** — `nut-monitor` and `apcupsd` both confirmed `inactive`
+  again today. Both hosts lost power on 2026-09-01 after wedging for ~15h. If a UPS is
+  attached, nothing is listening to it, so nothing shuts down cleanly.
+
+- **NFS mounts are `hard`.** Confirmed `hard` on kube-captain. That is what turned a NAS stall
+  into an uninterruptible node hang rather than degraded pods. `soft`/`softreloc` would
+  degrade instead. The mount also still reports the `omv.cdglan.org:` device string — the
+  superblock alias described under Traps, not a live DNS dependency.
+
+- **`holly` carries both `kube-worker` and the NAS** (see SERVERS.md). Every NFS PV points at
+  it, so losing holly takes storage from pods on *both* nodes. Nothing here fixes that without
+  moving the NAS or the disks; it is the structural limit of a two-host setup and worth stating
+  plainly rather than designing around.
+
 
 ## Why NFS uses an IP, not a name
 

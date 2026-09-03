@@ -1,4 +1,4 @@
-# 2026-09-02 21:11:21 by RouterOS 7.24
+# 2026-09-03 12:08:53 by RouterOS 7.24
 #
 # model = RB750Gr3
 /interface bridge
@@ -31,7 +31,7 @@ add comment="IoT devices" name=vlan20-iot ranges=10.0.20.50-10.0.20.254
 add name=vlan10-lab ranges=10.0.10.50-10.0.10.200
 add name=netadmin ranges=192.168.0.50-192.168.0.150
 add name=vlan30-guest ranges=10.0.30.50-10.0.30.200
-add name=vlan40-vms ranges=10.0.40.50-10.0.40.200
+add name=vlan40-vms ranges=10.0.40.50-10.0.40.99
 /ip dhcp-server
 add address-pool=netadmin interface=lan_bridge lease-time=6h name=defconf
 add address-pool=vlan10-lab interface=vlan10-lab lease-time=12h name=\
@@ -76,6 +76,7 @@ set detect-interface-list=all
 /interface list member
 add comment=defconf interface=lan_bridge list=LAN
 add comment=defconf interface=ether1 list=WAN
+add interface=pppoe-o2 list=WAN
 /interface ovpn-server server
 add auth=sha1,md5 mac-address=FE:01:7A:F1:0F:9A name=ovpn-server1
 /ip address
@@ -112,13 +113,23 @@ add address=10.0.40.0/24 comment=vlan40-vms dhcp-option=\
 add address=192.168.0.0/24 dns-server=192.168.0.1 domain=lan.jehli.net \
     gateway=192.168.0.1 netmask=24
 /ip dns
-set allow-remote-requests=yes max-udp-packet-size=512 mdns-repeat-ifaces=\
+set allow-remote-requests=yes max-udp-packet-size=1232 mdns-repeat-ifaces=\
     vlan10-lab,vlan20-iot,vlan40-vms servers=8.8.8.8,1.1.1.1
 /ip dns static
 add address=192.168.88.1 comment=defconf name=router.lan type=A
 add address=10.2.0.29 name=dev.connect.prusa type=A
-add comment="k8s CoreDNS - LAN infra names" forward-to=10.0.40.102 \
-    match-subdomain=yes name=lan.jehli.net type=FWD
+add address=10.0.40.201 comment="LAN infra (was coredns-lan)" name=\
+    nas.lan.jehli.net type=A
+add address=10.0.40.102 comment="LAN infra (was coredns-lan)" name=\
+    kube-captain.lan.jehli.net type=A
+add address=10.0.40.104 comment="LAN infra (was coredns-lan)" name=\
+    kube-worker.lan.jehli.net type=A
+add address=10.0.10.4 comment="LAN infra (was coredns-lan)" name=\
+    pve.lan.jehli.net type=A
+add address=10.0.10.5 comment="LAN infra (was coredns-lan)" name=\
+    holly.lan.jehli.net type=A
+add address=10.0.20.230 comment="LAN infra (was coredns-lan)" name=\
+    printer-buddy.lan.jehli.net type=A
 /ip firewall address-list
 add address=192.168.0.0/24 comment=\
     "RFC1918 segments - used by VLAN isolation rules" list=internal
@@ -211,6 +222,11 @@ add disabled=no interfaces=all min-rx=200ms min-tx=200ms multiplier=5
 set time-zone-name=Europe/Prague
 /system identity
 set name=Godfrey
+/system ntp client
+set enabled=yes
+/system ntp client servers
+add address=time.google.com
+add address=pool.ntp.org
 /tool mac-server
 set allowed-interface-list=LAN
 /tool mac-server mac-winbox

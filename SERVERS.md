@@ -201,7 +201,7 @@ k3s `v1.36.2+k3s1`, Debian 12, two nodes: `kube-captain` (control plane, on pve)
 |---|---|
 | `homeassistant` | homeassistant, esphome, homebridge, mosquitto (MQTT) |
 | `media-stack` | sonarr, radarr, prowlarr, deluge, flaresolverr |
-| `homelab-services` | adminer, dobby-robot, openmediavault (UI proxy), coredns-lan ×2 |
+| `homelab-services` | adminer, dobby-robot, openmediavault (UI proxy) |
 | `monitoring` | kube-prometheus-stack — prometheus, grafana, alertmanager, operator, kube-state-metrics |
 | `jellyfin`, `navidrome` | media servers |
 | `cert-manager` | cert-manager + cainjector + webhook |
@@ -209,23 +209,27 @@ k3s `v1.36.2+k3s1`, Debian 12, two nodes: `kube-captain` (control plane, on pve)
 | `nginx-ingress` | ingress-nginx — **zero ingresses use it** |
 | `kube-system` | coredns, local-path-provisioner, metrics-server |
 
-All 15 ingresses are `cloudflare-tunnel`. Three LoadBalancer services are exposed by k3s
-servicelb on both node IPs: `mosquitto` (1883, 9001), `coredns-lan` (53) and
-`ingress-nginx-controller` (80, 443) — the last still holding those ports for no consumer.
+All 15 ingresses are `cloudflare-tunnel`. Two LoadBalancer services are exposed by k3s
+servicelb on both node IPs: `mosquitto` (1883, 9001) and `ingress-nginx-controller`
+(80, 443) — the latter still holding those ports for no consumer. `coredns-lan` held a third
+on port 53 until it was retired to the router on 2026-09-03.
 
 `homeassistant` is pinned to kube-captain by a required `skyconnect-dongle` node affinity and
 a `/dev/ttyUSB0` hostPath — it cannot run on kube-worker.
 
 ## Single points of failure
 
-- **`kube-captain` is the only k3s control plane**, on pve. Remote access no longer depends on
-  it once CT 106 is authenticated, but the cluster still does.
 - **holly carries both `kube-worker` and the NAS.** Losing holly takes storage away from the
-  whole cluster, including pods running on kube-captain. This is the largest one.
-- **`kube-captain` is the only control plane**, and it hosts `lan.jehli.net` resolution via
-  `coredns-lan`. If it is down, LAN name resolution goes with it — `nas.local` (mDNS, served
-  by the router) is the fallback.
+  whole cluster, including pods running on kube-captain. This is the largest one, and the only
+  one with no cheap fix — it is the structural limit of two hosts.
+- **`kube-captain` is the only k3s control plane**, on pve. Remote access no longer depends on
+  it once CT 106 is authenticated, and LAN name resolution no longer does either — the
+  `lan.jehli.net` records moved to the router on 2026-09-03. The cluster itself still has no
+  second control plane.
 - **The Proxmox cluster expects 2 votes with 2 nodes and no qdevice**, so losing either host
   loses quorum. This is what produced the `no quorum!` errors when both wedged on 2026-09-01.
+  **Fixable on hardware already running:** `overwatcher` (RPi 4, `10.0.10.128`) can be a
+  corosync qdevice and become the third vote — see [MIGRATION.md](MIGRATION.md#open-items).
 - **No shared Proxmox storage**, so no live migration; a host outage means downtime for its
   guests.
+- **No UPS monitoring on pve**, so a power event is an unclean shutdown for every guest on it.

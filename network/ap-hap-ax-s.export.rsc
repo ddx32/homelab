@@ -1,4 +1,4 @@
-# 2026-09-02 23:11:24 by RouterOS 7.20.4
+# 2026-09-03 12:09:05 by RouterOS 7.20.4
 #
 # model = E62iUGS-2axD5axT
 /interface bridge
@@ -64,6 +64,15 @@ set servers=192.168.0.1
 add address=192.168.88.1 comment=defconf name=router.lan type=A
 /ip route
 add gateway=192.168.0.1
+/ip service
+set ftp disabled=yes
+set ssh address=192.168.0.0/24,10.0.10.0/24
+set telnet disabled=yes
+set www address=192.168.0.0/24,10.0.10.0/24
+set www-ssl address=192.168.0.0/24,10.0.10.0/24
+set winbox address=192.168.0.0/24,10.0.10.0/24
+set api disabled=yes
+set api-ssl disabled=yes
 /ipv6 firewall address-list
 add address=::/128 comment="defconf: unspecified address" list=bad_ipv6
 add address=::1/128 comment="defconf: lo" list=bad_ipv6
@@ -129,6 +138,11 @@ add action=drop chain=forward comment=\
 set time-zone-name=Europe/Prague
 /system identity
 set name=hAP-ax-S
+/system ntp client
+set enabled=yes
+/system ntp client servers
+add address=192.168.0.1
+add address=time.google.com
 /tool mac-server
 set allowed-interface-list=*2000011
 /tool mac-server mac-winbox
