@@ -137,19 +137,40 @@ tailscale up --advertise-routes=10.0.10.0/24,10.0.20.0/24,10.0.40.0/24,192.168.0
 
 `--accept-dns=false` keeps the router itself off MagicDNS, avoiding resolution loops.
 
-**CT 105 live since 2026-09-03**: authenticated as `homelab-subnet-router`, tailnet IP
-`100.116.69.45`, all four routes approved, key expiry disabled.
+Both live since 2026-09-03 — `100.116.69.45` (CT 105) and `100.97.22.61` (CT 106), all four
+routes approved on each, key expiry disabled. Both reach a host in every advertised subnet
+(pve on lab, the robot on iot, NAS SMB on vms, the switch on mgmt), and both have `tailscaled`
+enabled at boot alongside `onboot: 1` with `ip_forward` persisted in `sysctl.d`, so a host
+reboot brings them back.
 
-**CT 106 is built but not yet authenticated** — `tailscale up` is pending a login. Until the
-node is approved and its routes accepted, there is no failover; CT 105 carries everything.
+**Failover was tested, not assumed.** Stopping CT 105 moved all four routes to CT 106 within
+seconds. Reading the pair: exactly one shows `PrimaryRoutes`; the standby shows none but still
+lists the routes in `AllowedIPs` — that is what "approved but standby" looks like, and it is
+easy to misread as broken. Tailscale does **not** pre-empt, so after a failover the survivor
+keeps the routes even once the other returns. That is harmless; do not chase it.
 
-Both were verified to reach a host in every advertised subnet — pve on lab, the robot on iot,
-NAS SMB on vms, the switch on mgmt — and both have `tailscaled` enabled at boot alongside
-`onboot: 1` and `ip_forward` persisted in `sysctl.d`, so a host reboot brings them back.
+### Split DNS
 
-For LAN names over the tunnel, add **Split DNS**: domain `lan.jehli.net`, nameserver
-`10.0.10.1` — the router, not CoreDNS directly, since the router is always up and forwards
-that zone. `nas.local` will not work remotely; mDNS does not traverse Tailscale.
+To resolve `*.lan.jehli.net` over the tunnel, in the admin console under **DNS**:
+
+1. **Nameservers → Add nameserver → Custom**, address **`10.0.10.1`**.
+2. Enable **Restrict to search domain** and enter **`lan.jehli.net`**.
+
+Point it at the **router**, not CoreDNS on `10.0.40.102`. The router is always up and already
+forwards that zone to CoreDNS; pointing at CoreDNS directly makes remote name resolution
+depend on kube-captain being healthy.
+
+Two things that stop this working:
+
+- **The client must accept routes.** `10.0.10.1` is only reachable through an advertised
+  subnet. Linux needs `tailscale up --accept-routes`; on macOS, iOS and Windows it is a
+  toggle, off by default on some versions. Symptom is DNS timing out while the tunnel looks
+  fine.
+- **The subnet routers themselves run `--accept-dns=false`** on purpose, to avoid resolution
+  loops. That setting is per-node and does not affect your clients.
+
+`nas.local` will not work remotely — mDNS does not traverse Tailscale. Use
+`nas.lan.jehli.net`, or the IP.
 
 Not configured: exit node. Add `--advertise-exit-node` if you want all traffic routed home,
 bearing in mind the upstream is a CGNAT PPPoE line.
