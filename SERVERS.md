@@ -14,7 +14,8 @@ operational notes are in [`MIGRATION.md`](MIGRATION.md).
         │   .40 → 10.0.40.4   vms │          │  .40 → 10.0.40.5    vms │
         ├─────────────────────────┤          ├─────────────────────────┤
         │ 102 kube-captain  k3s   │          │ 104 kube-worker    k3s  │
-        │ 9001 debian12-template  │          │ 201 omv    NAS + 4×8TB  │
+        │ 105 tailscale (LXC)     │          │ 201 omv    NAS + 4×8TB  │
+        │ 9001 debian12-template  │          │                         │
         └─────────────────────────┘          └─────────────────────────┘
                         all VMs tagged VLAN 40
 ```
@@ -29,6 +30,7 @@ and `onboot=1` unless noted.
 | ID | Name | Host | RAM/cores | Address | Role |
 |---|---|---|---|---|---|
 | 102 | **kube-captain** | pve | 8G / 2 | 10.0.40.102 | k3s server (control plane) |
+| 105 | **tailscale** | pve | 512M / 1 | 10.0.40.105 | LXC — Tailscale subnet router |
 | 9001 | debian12-template | pve | — | — | template, not a running guest |
 | 104 | **kube-worker** | holly | 4G / 2 | 10.0.40.104 | k3s agent |
 | 201 | **omv** | holly | 4G / 3 | 10.0.40.201 | OpenMediaVault — NFS + SMB for everything |
@@ -67,6 +69,73 @@ guest sits only on vlan40. vlan20 reaches both trunks but no guest uses it.
 Note vlan10 ↔ vlan40 is routed **in the CRS310's hardware**, not by the router, so that
 traffic never passes the router's firewall. Between those two VLANs even ICMP works; between
 lab and IoT it does not.
+
+## Tailscale
+
+`tailscale` (CT 105 on pve, `10.0.40.105`) is an unprivileged Debian 12 LXC acting as a
+**subnet router** — remote access to the LAN without exposing anything inbound. That matters
+here: the WAN is CGNAT, so port forwarding cannot work, and Tailscale traverses it via NAT
+punching or a DERP relay.
+
+It is a container on pve rather than a VM, on the router, or in Kubernetes, deliberately:
+
+- **Not on the MikroTik** — the RB750Gr3 is `mmips`, and RouterOS containers need arm or x86.
+  The CRS310 and hAP are arm and *could* host it, but neither has spare headroom worth using.
+- **Not in Kubernetes** — chicken-and-egg. The cluster runs on these hypervisors; when it
+  breaks, remote access is exactly what you need to fix it.
+- **Not on holly** — holly already carries the NAS and `kube-worker`.
+
+### Routes advertised
+
+| Route | VLAN |
+|---|---|
+| `10.0.10.0/24` | lab |
+| `10.0.20.0/24` | iot |
+| `10.0.40.0/24` | vms |
+| `192.168.0.0/24` | mgmt |
+
+**`192.168.0.0/16` is deliberately not advertised**, even though the interface was a /16 until
+recently. Advertising it would swallow every foreign `192.168.x.x` network you connect
+from — hotels, cafés, other people's houses — and break your local connectivity while the
+tunnel is up. vlan30 (guest) is intentionally excluded.
+
+Placement does not restrict reach: every VLAN routes to every other, so a container on vlan40
+can serve all four.
+
+### The two things that bite
+
+**`/dev/net/tun` in an unprivileged LXC.** Tailscale cannot create its interface without it,
+and the container gets no such device by default. Two lines in `/etc/pve/lxc/105.conf`:
+
+```
+lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```
+
+**IP forwarding.** Without it, subnet routing fails silently — the node appears healthy and
+routes appear advertised, but nothing passes. Set in `/etc/sysctl.d/99-tailscale.conf`.
+
+### Operating it
+
+Started with:
+
+```sh
+tailscale up --advertise-routes=10.0.10.0/24,10.0.20.0/24,10.0.40.0/24,192.168.0.0/24 \
+             --accept-dns=false --hostname=homelab-subnet-router
+```
+
+`--accept-dns=false` keeps the router itself off MagicDNS, avoiding resolution loops.
+
+Two steps must happen in the **admin console**, not here: approve the advertised subnet
+routes (they do nothing until approved) and disable key expiry on this node, or it drops off
+the tailnet in 90 days.
+
+For LAN names over the tunnel, add **Split DNS**: domain `lan.jehli.net`, nameserver
+`10.0.10.1` — the router, not CoreDNS directly, since the router is always up and forwards
+that zone. `nas.local` will not work remotely; mDNS does not traverse Tailscale.
+
+Not configured: exit node. Add `--advertise-exit-node` if you want all traffic routed home,
+bearing in mind the upstream is a CGNAT PPPoE line.
 
 ## Storage
 
@@ -111,6 +180,10 @@ a `/dev/ttyUSB0` hostPath — it cannot run on kube-worker.
 
 ## Single points of failure
 
+- **Tailscale is not yet authenticated.** CT 105 is built and `tailscale up` is pending a
+  login; until the node is approved and its routes accepted in the admin console, there is no
+  remote access. It is also a single subnet router — a second one on holly advertising the
+  same routes would fail over automatically.
 - **holly carries both `kube-worker` and the NAS.** Losing holly takes storage away from the
   whole cluster, including pods running on kube-captain. This is the largest one.
 - **`kube-captain` is the only control plane**, and it hosts `lan.jehli.net` resolution via
