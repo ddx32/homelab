@@ -13,10 +13,8 @@ operational notes are in [`MIGRATION.md`](MIGRATION.md).
         │   .10 → 10.0.10.4  mgmt │          │  .10 → 10.0.10.5   mgmt │
         │   .40 → 10.0.40.4   vms │          │  .40 → 10.0.40.5    vms │
         ├─────────────────────────┤          ├─────────────────────────┤
-        │ 100 librarian           │          │ 101 netconsole-rx       │
         │ 102 kube-captain  k3s   │          │ 104 kube-worker    k3s  │
-        │ 103 caddy               │          │ 201 omv    NAS + 4×8TB  │
-        │ 202 avahi-reflect (off) │          │                         │
+        │ 202 avahi-reflect (off) │          │ 201 omv    NAS + 4×8TB  │
         │ 9001 debian12-template  │          │                         │
         └─────────────────────────┘          └─────────────────────────┘
                         all VMs tagged VLAN 40
@@ -31,17 +29,17 @@ and `onboot=1` unless noted.
 
 | ID | Name | Host | RAM/cores | Address | Role |
 |---|---|---|---|---|---|
-| 100 | librarian | pve | 1G / 1 | 10.0.40.100 | no open ports; purpose not verified |
 | 102 | **kube-captain** | pve | 8G / 2 | 10.0.40.102 | k3s server (control plane) |
-| 103 | caddy | pve | 1G / 1 | 10.0.40.103 | reverse proxy, predates the tunnel; no open ports |
 | 202 | avahi-reflect | pve | 512M / 1 | — | **stopped**, `onboot=0`; replaced by MikroTik mDNS repeat |
 | 9001 | debian12-template | pve | — | — | template, not a running guest |
-| 101 | netconsole-rx | holly | 1G / 1 | 10.0.40.101 | netconsole sink; no open ports |
 | 104 | **kube-worker** | holly | 4G / 2 | 10.0.40.104 | k3s agent |
 | 201 | **omv** | holly | 4G / 3 | 10.0.40.201 | OpenMediaVault — NFS + SMB for everything |
 
-`librarian`, `caddy` and `netconsole-rx` are running but answer nothing on 22/80/443/8080 from
-the lab VLAN. Likely vestigial; not confirmed either way.
+**Removed 2026-09-03:** `librarian` (100), `caddy` (103) and `netconsole-rx` (101). All three
+ran but served nothing on 22/80/443/8080 from the lab VLAN; caddy predated the Cloudflare
+tunnel. `vzdump` archives were taken first and are in `/var/lib/vz/dump/` on their respective
+hosts — librarian 3.7G, caddy 488M, netconsole-rx 1.37G. Delete those once you are satisfied
+nothing is missed; librarian had ~21G allocated, so it did hold real data.
 
 ## How VLANs reach the VMs
 
@@ -75,8 +73,9 @@ lab and IoT it does not.
   where every k8s config volume lives.
 - 15 NFS exports, 10 SMB shares.
 
-**Proxmox** — `local` (dir, 71G) and `local-lvm` (LVM-thin, 148G, 51% used). Not shared
-between the two hosts, so VMs cannot live-migrate.
+**Proxmox** — `local` (dir, 71G, also holds the vzdump archives) and `local-lvm` (LVM-thin;
+pve 148G at 35%, holly 354G at 9%). Not shared between the two hosts, so VMs cannot
+live-migrate.
 
 **Kubernetes** — 14 NFS PVs, all pointing at `10.0.40.201` by IP (see MIGRATION.md for why
 not a name), plus one `local-path` PV for mariadb.
