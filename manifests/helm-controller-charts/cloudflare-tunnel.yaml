@@ -13,7 +13,7 @@ spec:
   repo: https://helm.strrl.dev
   chart: cloudflare-tunnel-ingress-controller
   targetNamespace: cloudflare-tunnel-ingress-controller
-  version: 0.0.18
+  version: 0.1.0
   valuesContent: |-
     cloudflare:
       secretRef:
@@ -23,5 +23,8 @@ spec:
         apiTokenKey: apiToken
     cloudflared:
       image:
+        # The chart defaults to its own fork (ghcr.io/strrl/cloudflared) since 0.1.0;
+        # stay on the official image.
+        repository: cloudflare/cloudflared
         tag: 2026.10.7
       replicaCount: 1
