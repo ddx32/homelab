@@ -284,6 +284,10 @@ bearing in mind the upstream is a CGNAT PPPoE line.
     route now lives in `/etc/netplan/90-local-routes.yaml`; OMV only manages
     `NN-openmediavault-*.yaml`, so it survives redeploys.
   - RAID management moved out of the core into the `openmediavault-md` plugin (installed).
+  - The 7 → 8 step left nginx pointing at PHP 8.2's FPM socket while only PHP 8.4 was
+    installed, so the web UI loaded but every login returned **502**; NFS and SMB were fine.
+    `omv-salt deploy run phpfpm nginx` regenerated both. After any OMV release upgrade, test a
+    login, not just the shares.
 - The SSD used to be passed through twice (whole disk as `scsi5`, its partition as `scsi6`),
   so the guest saw two devices with the same filesystem UUID. `scsi6` was removed; mounts are
   by UUID, so the device letters shuffling between boots does not matter.
