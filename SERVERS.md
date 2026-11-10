@@ -21,11 +21,21 @@ operational notes are in [`MIGRATION.md`](MIGRATION.md).
                         all VMs tagged VLAN 40
 ```
 
-Cluster `cdglan`, quorate. **holly: Proxmox VE 9.2 (Debian 13, kernel 7.0), upgraded
-2026-11-10. pve: still 8.4.21 (Debian 12), past end of life (Aug 2026), next to upgrade.**
-A mixed 8/9 cluster is supported only for the duration of an upgrade.
+Cluster `cdglan`, quorate. **Both nodes on Proxmox VE 9.2 (Debian 13, kernel 7.0)**, upgraded
+from 8.4 on 2026-11-10 (8 went end of life in Aug 2026).
 
-Upgrade notes from holly, for pve:
+Guests start in order and get a long shutdown timeout, so k3s and Home Assistant always stop
+before the storage and database they depend on (Proxmox force-stops anything past 180 s):
+
+| Node | Order (start → ; shutdown is reverse) |
+|---|---|
+| pve | tailscale → librarian (`up=10`) → kube-captain (`down=600`) |
+| holly | tailscale2 → omv (`up=60`, `down=300`) → kube-worker (`down=600`) |
+
+Ordering cannot span nodes: kube-captain's pods simply wait for omv's NFS if both hosts boot
+together.
+
+Notes from the 8 → 9 upgrade, for the next major one:
 
 - Prep (no downtime): remove the `systemd-boot` meta-package (the `pve8to9` blocker), install
   `grub-efi-amd64` (pve booted UEFI with `grub-pc`) with
@@ -42,6 +52,13 @@ Upgrade notes from holly, for pve:
   reboot. `lvm.conf` was kept: it only adds Proxmox's ZFS/Ceph filter, which is harmless here.
 - Taking omv down stalls every NFS-backed pod; jellyfin's liveness probe restarts it a few
   times and it recovers on its own once the NAS is back.
+- **pve's guests would not start on kernel 7.0**: every network attach to `vmbr0` failed with
+  `RTNETLINK answers: Unknown error 524` / `netpoll: fwpr…p0 doesn't support polling`. Cause:
+  a hand-made `netconsole-sender.service` (June 2026) bound netconsole to `vmbr0.40`, and the
+  7.0 kernel refuses bridge ports without netpoll support while netconsole uses the bridge.
+  Its target, a "capture VM" at `10.0.40.210`, no longer existed. The service is disabled
+  (not deleted). Kernel logs off-host would need netconsole on a dedicated NIC, or journald/
+  rsyslog forwarding instead.
 
 ## VMs
 
@@ -260,7 +277,16 @@ bearing in mind the upstream is a CGNAT PPPoE line.
   guest ignored Proxmox's ACPI shutdown and a `qm shutdown` timed out. Now "Shutdown", and the
   VM has `agent: enabled=1` with `qemu-guest-agent` running, so Proxmox shuts it down through
   the agent. It stops in seconds. Never force-stop it: the RAID and every NFS client sit behind it.
-- Still on **OMV 6 / Debian 11, both past end of life**; upgrade to OMV 7 is pending.
+- **OMV 8.6 on Debian 13**, upgraded 6 → 7 → 8 on 2026-11-11 with `omv-release-upgrade`, run
+  in `tmux` because it prompts through `whiptail`. Things the upgrade changed:
+  - OMV 7+ writes the network config itself (netplan, static), which dropped the
+    `10.0.10.0/24 via 10.0.40.2` route: omv went silent to vlan10 (see librarian above). The
+    route now lives in `/etc/netplan/90-local-routes.yaml`; OMV only manages
+    `NN-openmediavault-*.yaml`, so it survives redeploys.
+  - RAID management moved out of the core into the `openmediavault-md` plugin (installed).
+- The SSD used to be passed through twice (whole disk as `scsi5`, its partition as `scsi6`),
+  so the guest saw two devices with the same filesystem UUID. `scsi6` was removed; mounts are
+  by UUID, so the device letters shuffling between boots does not matter.
 
 **Proxmox** — `nas-backup` (NFS, vzdump archives), `local` (dir, 71G) and `local-lvm` (LVM-thin;
 pve 148G at 23%, holly 354G at 9%). Not shared between the two hosts, so VMs cannot

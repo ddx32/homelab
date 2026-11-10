@@ -17,7 +17,7 @@ Two settings it needs:
 - **`tmpdir: /var/tmp` in `/etc/vzdump.conf` on both nodes.** Without it, backups of the
   unprivileged tailscale LXCs fail: their mapped root (uid 100000) cannot write vzdump's
   temp directory on NFS (`tar ... failed: exit code 2`).
-- **omv's passthrough disks are marked `backup=0`** (`scsi1`–`scsi6`: the 4 × 8 TB RAID
+- **omv's passthrough disks are marked `backup=0`** (`scsi1`–`scsi5`: the 4 × 8 TB RAID
   members and the SSD). Only its 32 GB system disk is backed up; otherwise vzdump would try
   to read ~32 TB.
 
