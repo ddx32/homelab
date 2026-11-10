@@ -21,7 +21,27 @@ operational notes are in [`MIGRATION.md`](MIGRATION.md).
                         all VMs tagged VLAN 40
 ```
 
-Proxmox 8.4.6 on both, cluster `cdglan`, quorate.
+Cluster `cdglan`, quorate. **holly: Proxmox VE 9.2 (Debian 13, kernel 7.0), upgraded
+2026-11-10. pve: still 8.4.21 (Debian 12), past end of life (Aug 2026), next to upgrade.**
+A mixed 8/9 cluster is supported only for the duration of an upgrade.
+
+Upgrade notes from holly, for pve:
+
+- Prep (no downtime): remove the `systemd-boot` meta-package (the `pve8to9` blocker), install
+  `grub-efi-amd64` (pve booted UEFI with `grub-pc`) with
+  `grub2/force_efi_extra_removable=true`, add `non-free-firmware` + `intel-microcode`, and pin
+  NIC names. `pve-network-interface-pinning` refuses to pin an interface to its current name,
+  so the pins are hand-written `.link` files in `/usr/local/lib/systemd/network/50-pin-*.link`
+  (MAC → current name). Both nodes are prepped; `pve8to9 --full` shows 0 failures.
+- Back up first (see [BACKUPS.md](BACKUPS.md)), shut guests down, switch repos to `trixie`
+  (security moves to `http://security.debian.org/debian-security trixie-security`), and run
+  `dist-upgrade` as a `systemd-run` unit so a dropped SSH session cannot kill it. ~15 min.
+- Expected during the upgrade: a few seconds with no network while networking and corosync
+  restart; chrony failing to start until the reboot (`Could not send notification to
+  $NOTIFY_SOCKET`, new chrony vs. the old systemd still running as PID 1). Both clear up on
+  reboot. `lvm.conf` was kept: it only adds Proxmox's ZFS/Ceph filter, which is harmless here.
+- Taking omv down stalls every NFS-backed pod; jellyfin's liveness probe restarts it a few
+  times and it recovers on its own once the NAS is back.
 
 ## VMs
 
@@ -231,12 +251,18 @@ bearing in mind the upstream is a CGNAT PPPoE line.
 **NAS (omv, VM 201 on holly)** — physical disks passed through by `by-id`, not virtual:
 
 - 4 × WD Red 8TB → Linux md **RAID5**, 22T usable, 6.3T used, all four healthy `[UUUU]`.
-  Serves `/export/media-library`, `downloads`, `music`, `iso`, `frigate-storage`.
+  Serves `/export/media-library`, `downloads`, `music`, `iso`, `frigate-storage`, and
+  `pve-backups` (Proxmox backups, NFS to the two hypervisors only; see [BACKUPS.md](BACKUPS.md)).
 - 1 × Crucial MX500 500GB → `/export/ssd-data` (and `frigate-config`), 2.3G used. This is
   where every k8s config volume lives.
 - 15 NFS exports, 10 SMB shares.
+- Shutdown: OMV's power button setting (System → Power Management) was "Nothing", so the
+  guest ignored Proxmox's ACPI shutdown and a `qm shutdown` timed out. Now "Shutdown", and the
+  VM has `agent: enabled=1` with `qemu-guest-agent` running, so Proxmox shuts it down through
+  the agent. It stops in seconds. Never force-stop it: the RAID and every NFS client sit behind it.
+- Still on **OMV 6 / Debian 11, both past end of life**; upgrade to OMV 7 is pending.
 
-**Proxmox** — `local` (dir, 71G, also holds the vzdump archives) and `local-lvm` (LVM-thin;
+**Proxmox** — `nas-backup` (NFS, vzdump archives), `local` (dir, 71G) and `local-lvm` (LVM-thin;
 pve 148G at 23%, holly 354G at 9%). Not shared between the two hosts, so VMs cannot
 live-migrate.
 

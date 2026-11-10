@@ -1,14 +1,23 @@
 ---
-# Patch every Debian host.
+# Patch every Debian host, one at a time: hypervisors first, then the VMs
+# (inventory order).
 #
 # Usage:
 #   cd ansible && ansible-playbook playbooks/packages.yaml
 #
-# `apt: upgrade` takes update_cache itself, so this needs one play, not three.
-# The Alpine play went with the avahi-reflect VM (removed 2026-09-03).
+# Never reboots; each host reports whether it needs one. Proxmox kernels never
+# write /var/run/reboot-required, so the newest installed kernel is compared with
+# the running one too. Rebooting a hypervisor stops its guests, and with two nodes
+# either one going down costs quorum: schedule those by hand.
+#
+# Not covered: the tailscale LXCs have no reachable sshd (update them with
+# `pct exec <vmid> -- apt-get ...` from their host), and printer-buddy is skipped
+# when vlan20 is unreachable.
 - name: Upgrade all packages
-  hosts: jehlinet_hosts,jehlinet_vms
+  hosts: jehlinet_hosts:jehlinet_vms
+  serial: 1
   become: true
+  ignore_unreachable: true
   tasks:
     - name: Perform full system upgrade
       ansible.builtin.apt:
@@ -17,3 +26,16 @@
         cache_valid_time: 3600
         autoclean: true
         autoremove: true
+
+    - name: Check whether a reboot is needed
+      ansible.builtin.shell: |
+        test -f /var/run/reboot-required && echo yes && exit 0
+        newest=$(ls /boot/vmlinuz-* 2>/dev/null | sort -V | tail -1)
+        if [ -n "$newest" ] && [ "$newest" != "/boot/vmlinuz-$(uname -r)" ]; then echo yes; fi
+      register: reboot_check
+      changed_when: false
+
+    - name: Report pending reboot
+      ansible.builtin.debug:
+        msg: "REBOOT NEEDED (running {{ ansible_kernel }})"
+      when: reboot_check.stdout | default('') == "yes"  # unset on unreachable hosts
