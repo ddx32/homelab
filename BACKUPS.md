@@ -25,14 +25,34 @@ One full set exists so far: the pre-PVE 9 backups of all six guests, about 28 GB
 holly's three are also copied to pve's `/var/lib/vz/dump/from-holly/`, because the NAS
 runs on holly.
 
+**App data: `ssd-data` → RAID, daily snapshots.** Every app's config (Home Assistant,
+Jellyfin, the *arr apps, Mosquitto, …) lives on `/export/ssd-data`: one SSD, no redundancy,
+and not in any VM backup since the apps reach it over NFS. OMV scheduled task
+**"ssd-data snapshot"** (System → Scheduled Tasks, daily 03:30, root) runs
+`/usr/local/sbin/ssd-data-snapshot` on omv:
+
+- `rsync -aHAX --delete --link-dest=latest` into shared folder `ssd-data-backup` on the RAID
+  (root-only, not exported), one directory per day, 14 kept.
+- Unchanged files are hard links into the previous day, so a day costs only what changed
+  (~110 MB against 2.8 GB on the first test).
+- Built as `<date>.partial` and renamed when complete; retention goes by directory name,
+  because `rsync -a` copies the source's mtimes.
+- Not an OMV rsync job on purpose: those keep a single mirror, which would copy an accidental
+  deletion or a corrupted database over the only backup the next night.
+- Live SQLite databases (Jellyfin, the *arr apps) are copied while in use, so a snapshot of
+  one may need the app's own repair on restore. The *arr apps also keep their own backups
+  under `config/Backups`, which land in the snapshots too.
+
+Restore a file: copy it back from
+`/srv/dev-disk-by-uuid-c2946330-0a87-4820-b505-4af86d6196b1/ssd-data-backup/<date>/` with the
+app stopped.
+
 ## To do
 
 1. **Scheduled job.** Datacenter → Backup → Add: storage `nas-backup`, all guests except
    template 9001, daily 02:30, mode snapshot, zstd, notify on failure.
-2. **App data on `ssd-data`.** Every app's config (Home Assistant, Jellyfin, the *arr apps,
-   Mosquitto, …) lives on `/export/ssd-data`: **one SSD, no redundancy**, and not covered by
-   VM backups since the apps reach it over NFS. Add an OMV rsync job (Services → Rsync →
-   Jobs) copying it nightly to a folder on the RAID, keeping a few versions.
+2. **Email from OMV.** Notifications are not configured (System → Notification), so a failing
+   scheduled task mails `root` and nobody reads it.
 3. **Off-site copy.** Everything above is in one house, mostly on holly. A weekly encrypted
    `rclone` sync of `pve-backups`, the `ssd-data` copies and the family `backups` share to
    Backblaze B2 or a Hetzner Storage Box covers fire, theft and ransomware.
