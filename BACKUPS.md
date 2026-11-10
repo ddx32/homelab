@@ -21,9 +21,14 @@ Two settings it needs:
   members and the SSD). Only its 32 GB system disk is backed up; otherwise vzdump would try
   to read ~32 TB.
 
-One full set exists so far: the pre-PVE 9 backups of all six guests, about 28 GB in total.
-holly's three are also copied to pve's `/var/lib/vz/dump/from-holly/`, because the NAS
-runs on holly.
+**Nightly job** (Datacenter → Backup): every guest except template 9001, daily 02:30,
+snapshot mode, zstd, to `nas-backup`. A full run is ~28 GB and ~12 min; the storage's
+retention prunes old ones. Failures go to `root@pam` (`f@filipruzicka.com`) through pve's
+local mailer, which has no relay configured, so check that mail actually arrives.
+
+Before the 2026-11-10/11 upgrades, one-off backups were taken (`pre-PVE9`, `pre-OMV7`,
+`pre-OMV8` in the notes); holly's are also copied to pve's `/var/lib/vz/dump/from-holly/`,
+because the NAS runs on holly. Delete that copy once the nightly job has run for a while.
 
 **App data: `ssd-data` → RAID, daily snapshots.** Every app's config (Home Assistant,
 Jellyfin, the *arr apps, Mosquitto, …) lives on `/export/ssd-data`: one SSD, no redundancy,
@@ -49,14 +54,12 @@ app stopped.
 
 ## To do
 
-1. **Scheduled job.** Datacenter → Backup → Add: storage `nas-backup`, all guests except
-   template 9001, daily 02:30, mode snapshot, zstd, notify on failure.
-2. **Email from OMV.** Notifications are not configured (System → Notification), so a failing
-   scheduled task mails `root` and nobody reads it.
-3. **Off-site copy.** Everything above is in one house, mostly on holly. A weekly encrypted
+1. **Email that arrives.** OMV has no notifications configured (System → Notification), and
+   pve's mailer has no relay; give both an SMTP relay so failures reach someone.
+2. **Off-site copy.** Everything above is in one house, mostly on holly. A weekly encrypted
    `rclone` sync of `pve-backups`, the `ssd-data` copies and the family `backups` share to
    Backblaze B2 or a Hetzner Storage Box covers fire, theft and ransomware.
-4. **Test a restore** every few months; a backup nobody has restored is a guess.
+3. **Test a restore** every few months; a backup nobody has restored is a guess.
 
 ## Known limits
 
