@@ -54,13 +54,14 @@ Re-verified live 2026-09-03. Ordered by consequence.
   IPs). Cutover was a single batch — do not run the statics alongside the `FWD` entry, as
   precedence between an exact-name static and a `match-subdomain` forward is ambiguous.
 
-  If cluster services ever move behind ingress-nginx and need *dynamic* names, that is the
+  If cluster services ever move behind a LAN ingress and need *dynamic* names, that is the
   case for bringing CoreDNS back with `k8s_gateway`. Today every ingress is cloudflare-tunnel
   with no LAN address, so there is nothing to discover.
 
-- **`ingress-nginx` has zero consumers.** Re-confirmed: all 15 ingresses are
-  `cloudflare-tunnel`, and it still holds a LoadBalancer on 80/443 across both node IPs.
-  Remove it, or put something behind it.
+- **`ingress-nginx` removed (2026-11-10).** It had zero consumers (all 15 ingresses are
+  `cloudflare-tunnel`) but held a LoadBalancer on 80/443 across both node IPs, and upstream
+  had retired the project. The `ingressClassName: nginx` defaults in `helm/*/values.yaml`
+  are dead; every manifest overrides them.
 
 - **mosquitto persistence has never worked.** The chart renders `mosquitto.conf` with
   persistence enabled and provisions `mosquitto-pvc`, but the deployment never mounts that

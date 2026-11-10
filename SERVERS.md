@@ -257,13 +257,12 @@ k3s `v1.36.2+k3s1`, Debian 12, two nodes: `kube-captain` (control plane, on pve)
 | `jellyfin`, `navidrome` | media servers |
 | `cert-manager` | cert-manager + cainjector + webhook |
 | `cloudflare-tunnel-ingress-controller` | tunnel controller + cloudflared connector |
-| `nginx-ingress` | ingress-nginx — **zero ingresses use it** |
 | `kube-system` | coredns, local-path-provisioner, metrics-server |
 
-All 15 ingresses are `cloudflare-tunnel`. Two LoadBalancer services are exposed by k3s
-servicelb on both node IPs: `mosquitto` (1883, 9001) and `ingress-nginx-controller`
-(80, 443) — the latter still holding those ports for no consumer. `coredns-lan` held a third
-on port 53 until it was retired to the router on 2026-09-03.
+All 15 ingresses are `cloudflare-tunnel`. One LoadBalancer service is exposed by k3s
+servicelb on both node IPs: `mosquitto` (1883, 9001). `ingress-nginx` held 80/443 for no
+consumer until it was removed on 2026-11-10, and `coredns-lan` held 53 until it was retired
+to the router on 2026-09-03.
 
 `homeassistant` is pinned to kube-captain by a required `skyconnect-dongle` node affinity and
 a `/dev/ttyUSB0` hostPath — it cannot run on kube-worker.
