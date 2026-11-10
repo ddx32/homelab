@@ -9,6 +9,7 @@ spec:
   targetNamespace: media-stack
   version: 0.1.1
   valuesContent: |-
+    version: release-6.4.4.10685
     nfs:
       server: 10.0.40.201
       paths:

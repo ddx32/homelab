@@ -30,7 +30,7 @@ spec:
   targetNamespace: homeassistant
   version: 0.1.4
   valuesContent: |-
-    imageTag: 2025.7
+    imageTag: "2026.10"
     host: esphome.jehli.net
     ingressClassName: cloudflare-tunnel
     volumeName: esphome-config-pv

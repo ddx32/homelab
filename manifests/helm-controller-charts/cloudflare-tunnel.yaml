@@ -23,5 +23,5 @@ spec:
         apiTokenKey: apiToken
     cloudflared:
       image:
-        tag: 2025.7.0
+        tag: 2026.10.7
       replicaCount: 1

@@ -17,4 +17,4 @@ spec:
     host: adminer.jehli.net
     ingressClassName: cloudflare-tunnel
     image:
-      tag: 5.3.0
+      tag: 5.5.1

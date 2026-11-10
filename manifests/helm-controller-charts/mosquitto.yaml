@@ -29,5 +29,5 @@ spec:
   targetNamespace: homeassistant
   version: 0.2.1
   valuesContent: |-
-    imageTag: 2.1-alpine
+    imageTag: 2.1.2-alpine
     passwd: "cdglan:$7$101$ZJR0/eCErwp+8MF8$EjB1E4xOhaBadjvKj3kcRhuhD+kOxH2rdrxTBwOlt7BQsYJrkRn0N1W0LIGgNhzFw2q15boS0PO/zfWNgjXTEw=="

@@ -14,6 +14,8 @@ spec:
   targetNamespace: homelab-services
   version: 0.1.3
   valuesContent: |-
+    nginx:
+      versionTag: 1.30.6-alpine
     targets:
       - name: openmediavault
         enabled: true

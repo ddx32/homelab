@@ -9,6 +9,7 @@ spec:
   targetNamespace: media-stack
   version: 0.1.1
   valuesContent: |-
+    version: release-2.7.0.5723
     nfs:
       server: 10.0.40.201
       paths:
@@ -36,8 +37,7 @@ spec:
     spec:
       containers:
         - name: flaresolverr
-          image: ghcr.io/flaresolverr/flaresolverr:latest
-          imagePullPolicy: Always
+          image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
           ports:
             - containerPort: 8191
           env:

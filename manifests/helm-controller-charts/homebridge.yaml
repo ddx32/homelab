@@ -31,7 +31,7 @@ spec:
   version: 0.2.2
   valuesContent: |-
     image:
-      tag: 2025-02-26
+      tag: 2026-11-02
     env:
       TZ: Europe/Prague
     ingress:

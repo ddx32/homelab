@@ -14,7 +14,7 @@ spec:
   targetNamespace: navidrome
   version: 0.1.4
   valuesContent: |-
-    version: latest
+    version: 0.64.2
     nfs:
       server: 10.0.40.201
       paths:
