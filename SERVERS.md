@@ -71,7 +71,6 @@ and `onboot=1` unless noted.
 | 102 | **kube-captain** | pve | 8G / 2 | 10.0.40.102 | k3s server (control plane) |
 | 105 | **tailscale** | pve | 512M / 1 | 10.0.40.105 | LXC — Tailscale subnet router |
 | 9002 | debian13-template | pve | — | — | template, Debian 13 generic cloud image (2026-11-11) |
-| 9001 | debian12-template | pve | — | — | old template, nothing cloned from it; delete when convenient |
 | 104 | **kube-worker** | holly | 4G / 2 | 10.0.40.104 | k3s agent |
 | 106 | **tailscale2** | holly | 512M / 1 | 10.0.40.106 | LXC — Tailscale subnet router (HA pair) |
 | 201 | **omv** | holly | 4G / 3 | 10.0.40.201 | OpenMediaVault — NFS + SMB for everything |
