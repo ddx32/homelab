@@ -52,7 +52,8 @@ instead of being silently accepted. Verify the new key out-of-band before replac
 - Other VMs: `qm guest exec <vmid> -- cat /etc/ssh/ssh_host_ed25519_key.pub` from the
   hypervisor, if the guest agent runs.
 
-The cloud-init VMs (cloned from template 9001) **regenerate their host keys whenever
+The cloud-init VMs (cloned from the Debian templates) **regenerate their host keys whenever
 Proxmox's cloud-init instance-id changes**, which happens when the VM's cloud-init settings
-change. kube-worker's key changed this way on 2026-11-10. Setting `ssh_deletekeys: false` in
-the guest's `/etc/cloud/cloud.cfg.d/` stops it.
+change. kube-worker's key changed this way on 2026-11-10; it now has
+`/etc/cloud/cloud.cfg.d/99-keep-host-keys.cfg` (`ssh_deletekeys: false`). Add the same to new
+clones of template 9002.

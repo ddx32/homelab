@@ -16,7 +16,7 @@ operational notes are in [`MIGRATION.md`](MIGRATION.md).
         │ 100 librarian  MariaDB  │          │ 104 kube-worker    k3s  │
         │ 102 kube-captain  k3s   │          │ 106 tailscale2 (LXC)    │
         │ 105 tailscale (LXC)     │          │ 201 omv    NAS + 4×8TB  │
-        │ 9001 debian12-template  │          │                         │
+        │ 9002 debian13-template  │          │                         │
         └─────────────────────────┘          └─────────────────────────┘
                         all VMs tagged VLAN 40
 ```
@@ -70,7 +70,8 @@ and `onboot=1` unless noted.
 | 100 | **librarian** | pve | 1G / 1 | 10.0.40.100 | MariaDB — Home Assistant's recorder DB |
 | 102 | **kube-captain** | pve | 8G / 2 | 10.0.40.102 | k3s server (control plane) |
 | 105 | **tailscale** | pve | 512M / 1 | 10.0.40.105 | LXC — Tailscale subnet router |
-| 9001 | debian12-template | pve | — | — | template, not a running guest |
+| 9002 | debian13-template | pve | — | — | template, Debian 13 generic cloud image (2026-11-11) |
+| 9001 | debian12-template | pve | — | — | old template, nothing cloned from it; delete when convenient |
 | 104 | **kube-worker** | holly | 4G / 2 | 10.0.40.104 | k3s agent |
 | 106 | **tailscale2** | holly | 512M / 1 | 10.0.40.106 | LXC — Tailscale subnet router (HA pair) |
 | 201 | **omv** | holly | 4G / 3 | 10.0.40.201 | OpenMediaVault — NFS + SMB for everything |
@@ -111,6 +112,21 @@ idempotent; original saved as `interfaces.bak`). Verified with `ifquery ens18`, 
 from `10.0.10.4` and `ansible librarian -m ping` from a workstation. **Any statically
 addressed host on vlan40 needs this route set by hand** — the DHCP option only reaches hosts
 inside the pool.
+
+It has to be **persistent network config, not a boot-time `ip route`**. kube-captain and
+kube-worker had it as a oneshot `route-vlan10.service`; the Debian 13 upgrade restarted
+networking, the route was flushed, and kube-worker went silent to vlan10 until it rebooted.
+Where each host keeps it now:
+
+| Host | Route lives in |
+|---|---|
+| librarian, kube-captain | `post-up` in `/etc/network/interfaces` (`route-vlan10.service` kept on kube-captain, harmless) |
+| kube-worker | `/etc/netplan/90-local-routes.yaml` (cloud-init only rewrites `50-cloud-init.yaml`) |
+| omv | `/etc/netplan/90-local-routes.yaml` (OMV only rewrites `NN-openmediavault-*.yaml`) |
+
+**librarian: Debian 13, MariaDB 11.8** (from 10.11, 2026-11-11; a logical dump taken first is
+in `/root/mariadb-10.11-pretrixie.sql.zst`). Home Assistant connects as MariaDB `root` over
+the network; a user limited to the `homeassistant` database would be better.
 
 **InfluxDB was removed from `librarian` 2026-09-03; MariaDB is the only database it serves.**
 Both packages are purged and `/var/lib/influxdb` is gone. The guest went 14G → 3.5G used.
@@ -161,7 +177,7 @@ lab and IoT it does not.
 
 ## Tailscale
 
-Two unprivileged Debian 12 LXCs act as **subnet routers** — remote access to the LAN without
+Two unprivileged Debian 13 LXCs act as **subnet routers** — remote access to the LAN without
 exposing anything inbound. That matters here: the WAN is CGNAT, so port forwarding cannot
 work, and Tailscale traverses it via NAT punching or a DERP relay.
 
@@ -301,7 +317,7 @@ not a name), plus one `local-path` PV for mariadb.
 
 ## Kubernetes
 
-k3s `v1.36.2+k3s1`, Debian 12, two nodes: `kube-captain` (control plane, on pve) and
+k3s `v1.36.2+k3s1`, Debian 13 (kernel 6.12), two nodes: `kube-captain` (control plane, on pve) and
 `kube-worker` (agent, on holly). Pods currently sit 40 / 15 across them.
 
 | Namespace | Runs |
