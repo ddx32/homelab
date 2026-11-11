@@ -124,8 +124,11 @@ Where each host keeps it now:
 | omv | `/etc/netplan/90-local-routes.yaml` (OMV only rewrites `NN-openmediavault-*.yaml`) |
 
 **librarian: Debian 13, MariaDB 11.8** (from 10.11, 2026-11-11; a logical dump taken first is
-in `/root/mariadb-10.11-pretrixie.sql.zst`). Home Assistant connects as MariaDB `root` over
-the network; a user limited to the `homeassistant` database would be better.
+in `/root/mariadb-10.11-pretrixie.sql.zst`). Home Assistant connects as
+`homeassistant@'10.0.40.%'`, which has rights on the `homeassistant` database only; the
+connection string is `recorder_db_url` in HA's `secrets.yaml`. MariaDB `root` can still log in
+from `10.0.%.%` and `192.168.%.%` (adminer); its password sat in HA's `configuration.yaml`
+until 2026-11-11 and is still in the ssd-data snapshots until they roll off, so rotate it.
 
 **InfluxDB was removed from `librarian` 2026-09-03; MariaDB is the only database it serves.**
 Both packages are purged and `/var/lib/influxdb` is gone. The guest went 14G → 3.5G used.
@@ -316,7 +319,7 @@ not a name), plus one `local-path` PV for mariadb.
 
 ## Kubernetes
 
-k3s `v1.36.2+k3s1`, Debian 13 (kernel 6.12), two nodes: `kube-captain` (control plane, on pve) and
+k3s `v1.37.2+k3s1`, Debian 13 (kernel 6.12), two nodes: `kube-captain` (control plane, on pve) and
 `kube-worker` (agent, on holly). Pods currently sit 40 / 15 across them.
 
 | Namespace | Runs |
@@ -330,7 +333,7 @@ k3s `v1.36.2+k3s1`, Debian 13 (kernel 6.12), two nodes: `kube-captain` (control 
 | `cloudflare-tunnel-ingress-controller` | tunnel controller + cloudflared connector |
 | `kube-system` | coredns, local-path-provisioner, metrics-server |
 
-All 15 ingresses are `cloudflare-tunnel`. One LoadBalancer service is exposed by k3s
+All 14 ingresses are `cloudflare-tunnel`. One LoadBalancer service is exposed by k3s
 servicelb on both node IPs: `mosquitto` (1883, 9001). `ingress-nginx` held 80/443 for no
 consumer until it was removed on 2026-11-10, and `coredns-lan` held 53 until it was retired
 to the router on 2026-09-03.

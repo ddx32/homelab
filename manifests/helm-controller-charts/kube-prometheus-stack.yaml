@@ -36,7 +36,10 @@ spec:
           - grafana.jehli.net
     alertmanager:
       ingress:
-        enabled: true
+        # Off: it was public with no login (anyone could read alerts and add silences).
+        # Re-enable once a Cloudflare Access policy covers alertmanager.jehli.net. Meanwhile:
+        # kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093
+        enabled: false
         ingressClassName: cloudflare-tunnel
         hosts:
           - alertmanager.jehli.net
