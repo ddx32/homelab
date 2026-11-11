@@ -31,14 +31,23 @@ one node at a time and wait for `pvecm status` to show `Quorate: Yes` before the
 Unreachable hosts are skipped, not fatal (`ignore_unreachable`), so one dead host does not
 stop the run.
 
+A second play patches the **LXCs** (the tailscale pair, no sshd) from their hypervisor
+with `pct exec`, one host at a time so a subnet router is always up.
+
+## Other playbooks
+
+- `playbooks/versions.yaml`: read-only report of OS, kernel, Proxmox, k3s, OMV, MariaDB and
+  Tailscale versions on every host and LXC. Run it before planning upgrades.
+- `playbooks/k3s/k3s-upgrade.yaml -e k3s_version=vX.Y.Z+k3sN`: swaps the k3s binary
+  (checksum-verified, old one kept for rollback), server first, waits for each node to report
+  the new version. One minor version per run.
+- `playbooks/k3s/k3s-agent.yaml`: joins a new agent node at the server's version.
+
 ### Not covered
 
-- **The tailscale LXCs** (105 on pve, 106 on holly) run no reachable sshd. Patch them from
-  their host, one at a time so a subnet router stays up:
-  `pct exec 106 -- sh -c 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y full-upgrade'`
 - **printer-buddy** (vlan20) is not reachable over SSH from vlan10 and gets skipped.
-- **Major releases** (Debian 12→13, Proxmox VE 8→9, OMV 6→7) are not routine patching. Do
-  them by hand, per host, following the upstream guide; see `../SERVERS.md`.
+- **Major releases** (Debian, Proxmox VE, OMV, RouterOS) are not routine patching. Do them by
+  hand, per host; procedures and past traps are in `../UPGRADES.md`.
 
 ## Host keys
 

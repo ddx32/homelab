@@ -19,6 +19,12 @@ jehlinet_vms:
     kube-worker:
       ansible_host: 10.0.40.104
 
+# Proxmox hypervisors (hosts defined above in jehlinet_hosts); their LXCs are reached via pct
+proxmox:
+  hosts:
+    pve:
+    holly:
+
 # k3s cluster role groups (hosts defined above in jehlinet_vms)
 k3s_server:
   hosts:

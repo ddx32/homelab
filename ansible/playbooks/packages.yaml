@@ -10,9 +10,10 @@
 # the running one too. Rebooting a hypervisor stops its guests, and with two nodes
 # either one going down costs quorum: schedule those by hand.
 #
-# Not covered: the tailscale LXCs have no reachable sshd (update them with
-# `pct exec <vmid> -- apt-get ...` from their host), and printer-buddy is skipped
-# when vlan20 is unreachable.
+# The LXCs (the tailscale pair) run no sshd, so the second play patches them from
+# their hypervisor with `pct exec`, one host at a time: one subnet router is always up.
+#
+# Not covered: printer-buddy is skipped when vlan20 is unreachable.
 - name: Upgrade all packages
   hosts: jehlinet_hosts:jehlinet_vms
   serial: 1
@@ -39,3 +40,19 @@
       ansible.builtin.debug:
         msg: "REBOOT NEEDED (running {{ ansible_kernel }})"
       when: reboot_check.stdout | default('') == "yes"  # unset on unreachable hosts
+
+- name: Upgrade packages in the LXCs, from their host
+  hosts: proxmox
+  serial: 1
+  become: true
+  tasks:
+    - name: Full-upgrade each running container
+      ansible.builtin.shell: |
+        set -e
+        for id in $(pct list | awk 'NR>1 && $2=="running" {print $1}'); do
+          echo "== CT $id"
+          pct exec "$id" -- sh -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -y \
+            -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold full-upgrade'
+        done
+      register: lxc_upgrade
+      changed_when: lxc_upgrade.stdout is search('[1-9][0-9]* upgraded')

@@ -1,0 +1,70 @@
+---
+# Upgrade k3s by swapping the binary: server first, then the agents, one node at a time.
+# Running pods are not restarted; the API pauses for a few seconds per node.
+#
+# Usage:
+#   cd ansible && ansible-playbook playbooks/k3s/k3s-upgrade.yaml -e k3s_version=v1.37.2+k3s1
+#
+# Before a new minor version: one minor per run (1.36 -> 1.37, never 1.36 -> 1.38), read
+# Kubernetes' "Urgent Upgrade Notes" in its CHANGELOG, and check nothing calls a removed API:
+#   kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis
+#
+# Rollback: the previous binary stays as /usr/local/bin/k3s.<old version>; move it back and
+# restart k3s / k3s-agent.
+- name: Upgrade k3s
+  hosts: k3s_server:k3s_agents
+  serial: 1
+  become: true
+  vars:
+    k3s_server_host: "{{ groups['k3s_server'][0] }}"
+    k3s_release_url: "https://github.com/k3s-io/k3s/releases/download/{{ k3s_version | urlencode }}"
+    k3s_service: "{{ 'k3s' if inventory_hostname in groups['k3s_server'] else 'k3s-agent' }}"
+
+  tasks:
+    - name: Require a target version
+      ansible.builtin.assert:
+        that: k3s_version is defined
+        fail_msg: "Pass -e k3s_version=vX.Y.Z+k3sN"
+
+    - name: Read the running version
+      ansible.builtin.command:
+        cmd: k3s --version
+      register: k3s_current
+      changed_when: false
+
+    - name: Upgrade when not already there
+      when: k3s_version not in k3s_current.stdout
+      block:
+        - name: Download the binary, verified against the release's sha256sum file
+          ansible.builtin.get_url:
+            url: "{{ k3s_release_url }}/k3s"
+            dest: /usr/local/bin/k3s.new
+            mode: "0755"
+            checksum: "sha256:{{ k3s_release_url }}/sha256sum-amd64.txt"
+
+        - name: Keep the old binary for rollback
+          ansible.builtin.copy:
+            src: /usr/local/bin/k3s
+            dest: "/usr/local/bin/k3s.{{ k3s_current.stdout_lines[0].split()[2] }}"
+            remote_src: true
+            mode: preserve
+
+        - name: Put the new binary in place
+          ansible.builtin.command:
+            cmd: mv /usr/local/bin/k3s.new /usr/local/bin/k3s
+          changed_when: true
+
+        - name: Restart k3s
+          ansible.builtin.systemd:
+            name: "{{ k3s_service }}"
+            state: restarted
+
+        - name: Wait for the node to report the new version
+          ansible.builtin.command:
+            cmd: "k3s kubectl get node {{ inventory_hostname }} -o jsonpath={.status.nodeInfo.kubeletVersion}"
+          delegate_to: "{{ k3s_server_host }}"
+          register: k3s_node_version
+          until: k3s_node_version.stdout == k3s_version
+          retries: 30
+          delay: 10
+          changed_when: false

@@ -1,7 +1,8 @@
 # Servers
 
 Compute and storage. Network topology is in [`network/`](network/README.md); cluster
-operational notes are in [`MIGRATION.md`](MIGRATION.md).
+operational notes are in [`MIGRATION.md`](MIGRATION.md); how to keep all of it current is in
+[`UPGRADES.md`](UPGRADES.md).
 
 ```
         switch ether4 (tagged 10,20,40)      switch ether6 (tagged 10,20,40)

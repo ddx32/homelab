@@ -1,0 +1,37 @@
+---
+# Read-only: what every host, VM and LXC runs. Start here before upgrading anything,
+# and compare against the "Current" column in ../../UPGRADES.md.
+#
+# Usage:
+#   cd ansible && ansible-playbook playbooks/versions.yaml
+- name: Report versions
+  hosts: jehlinet_hosts:jehlinet_vms
+  become: true
+  ignore_unreachable: true
+  tasks:
+    - name: Collect component versions
+      ansible.builtin.shell: |
+        v="$(. /etc/os-release; echo "$PRETTY_NAME") / kernel $(uname -r)"
+        command -v pveversion >/dev/null && v="$v / $(pveversion | cut -d/ -f1,2)"
+        command -v k3s >/dev/null && v="$v / k3s $(k3s --version | head -1 | cut -d' ' -f3)"
+        command -v tailscale >/dev/null && v="$v / tailscale $(tailscale version | head -1)"
+        command -v mariadb >/dev/null && v="$v / $(mariadb --version | grep -oE '[0-9.]+-MariaDB')"
+        dpkg-query -W -f='${Version}' openmediavault >/dev/null 2>&1 \
+          && v="$v / openmediavault $(dpkg-query -W -f='${Version}' openmediavault)"
+        echo "$v"
+      register: versions
+      changed_when: false
+
+    - name: Collect LXC versions (from their host)
+      ansible.builtin.shell: |
+        for id in $(pct list | awk 'NR>1 && $2=="running" {print $1}'); do
+          pct exec "$id" -- sh -c '. /etc/os-release; echo "CT $(hostname): $PRETTY_NAME$(command -v tailscale >/dev/null && echo " / tailscale $(tailscale version | head -1)")"'
+        done
+      register: lxc_versions
+      changed_when: false
+      when: inventory_hostname in groups['proxmox']
+
+    - name: Show
+      ansible.builtin.debug:
+        msg: "{{ [versions.stdout] + (lxc_versions.stdout_lines | default([])) }}"
+      when: versions.stdout is defined
