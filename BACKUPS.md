@@ -24,7 +24,7 @@ Two settings it needs:
 **Nightly job** (Datacenter → Backup): every guest except template 9001, daily 02:30,
 snapshot mode, zstd, to `nas-backup`. A full run is ~28 GB and ~12 min; the storage's
 retention prunes old ones. Failures go to `root@pam` (`f@filipruzicka.com`) through pve's
-local mailer, which has no relay configured, so check that mail actually arrives.
+local mailer; delivery confirmed working without a relay.
 
 Before the 2026-11-10/11 upgrades, one-off backups were taken (`pre-PVE9`, `pre-OMV7`,
 `pre-OMV8` in the notes); holly's are also copied to pve's `/var/lib/vz/dump/from-holly/`,
@@ -54,8 +54,8 @@ app stopped.
 
 ## To do
 
-1. **Email that arrives.** OMV has no notifications configured (System → Notification), and
-   pve's mailer has no relay; give both an SMTP relay so failures reach someone.
+1. **Email from OMV.** Notifications are not configured there (System → Notification), so a
+   failing `ssd-data snapshot` task mails `root` on omv and nobody sees it.
 2. **Off-site copy.** Everything above is in one house, mostly on holly. A weekly encrypted
    `rclone` sync of `pve-backups`, the `ssd-data` copies and the family `backups` share to
    Backblaze B2 or a Hetzner Storage Box covers fire, theft and ransomware.
