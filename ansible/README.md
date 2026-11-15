@@ -36,6 +36,11 @@ with `pct exec`, one host at a time so a subnet router is always up.
 
 ## Other playbooks
 
+- `playbooks/shutdown.yaml`: powers the whole homelab off in dependency order before a power
+  cut: k3s VMs, then librarian and omv, then the tailscale LXCs, then the hypervisors, the
+  Pis, and finally the MikroTiks (AP, switch, router, each on a delay so the SSH path
+  survives long enough). Bring-up is power-on; see the playbook header.
+
 - `playbooks/versions.yaml`: read-only report of OS, kernel, Proxmox, k3s, OMV, MariaDB and
   Tailscale versions on every host and LXC. Run it before planning upgrades.
 - `playbooks/k3s/k3s-upgrade.yaml -e k3s_version=vX.Y.Z+k3sN`: swaps the k3s binary

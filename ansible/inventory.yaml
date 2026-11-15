@@ -8,6 +8,12 @@ jehlinet_hosts:
     printer-buddy: # RPi Zero W as a print/scanner server
       ansible_host: 10.0.20.230
 
+# Not patched by packages.yaml; only shutdown.yaml uses it.
+others:
+  hosts:
+    overwatcher: # RPi 4
+      ansible_host: 10.0.10.128
+
 jehlinet_vms:
   hosts:
     librarian: # MariaDB - Home Assistant's recorder DB (see playbooks/db/)

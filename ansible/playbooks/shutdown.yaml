@@ -1,0 +1,82 @@
+---
+# Shut the whole homelab down in dependency order, e.g. before a power cut.
+#
+# Usage:
+#   cd ansible && ansible-playbook playbooks/shutdown.yaml
+#
+# Order: k3s nodes (they hold NFS mounts and HA's DB connection), then librarian and omv,
+# then the tailscale LXCs, then the hypervisors, Pis and finally the MikroTiks. Each task
+# finishes on both hypervisors before the next starts, which is what keeps omv up until
+# both k3s nodes are gone; Proxmox's own startup order cannot span nodes.
+#
+# Bring-up: power on. Guests are onboot=1 and start in order per node (SERVERS.md). The
+# MikroTiks need a power cycle after /system shutdown, which a power cut gives them; the
+# hypervisors only come back by themselves if their BIOS powers on after AC loss.
+- name: Stop guests, then hypervisors
+  hosts: proxmox
+  become: true
+  ignore_unreachable: true
+  vars:
+    # Per-stage guests on each node; a stage runs on both nodes before the next one.
+    stages:
+      pve: {k3s: [102], vms: [100], lxc: [105]}
+      holly: {k3s: [104], vms: [201], lxc: [106]}
+    guests: "{{ stages[inventory_hostname] }}"
+
+  tasks:
+    - name: Shut down the k3s VMs (down=600 matches their Proxmox shutdown timeout)
+      ansible.builtin.command: qm shutdown {{ item }} --timeout 600
+      loop: "{{ guests.k3s }}"
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0 and 'not running' not in result.stderr
+
+    - name: Shut down librarian and omv, now that nothing mounts or queries them
+      ansible.builtin.command: qm shutdown {{ item }} --timeout 300
+      loop: "{{ guests.vms }}"
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0 and 'not running' not in result.stderr
+
+    - name: Shut down the tailscale LXCs
+      ansible.builtin.command: pct shutdown {{ item }} --timeout 60
+      loop: "{{ guests.lxc }}"
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0 and 'not running' not in result.stderr
+
+    - name: Power off the hypervisor
+      ansible.builtin.command: systemctl poweroff
+      async: 1
+      poll: 0
+      changed_when: true
+
+- name: Power off the Pis
+  hosts: printer-buddy:overwatcher
+  become: true
+  ignore_unreachable: true
+  gather_facts: false
+  tasks:
+    - name: Power off
+      ansible.builtin.command: systemctl poweroff
+      async: 1
+      poll: 0
+      changed_when: true
+
+- name: Shut down the MikroTiks
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # The router and switch carry this SSH session to the others, so every device is told
+    # at once and shuts down after its own delay: AP, then switch, then router.
+    mikrotiks:
+      - {ssh: "admin@192.168.0.4", delay: 5}
+      - {ssh: "admin@192.168.0.3", delay: 10}
+      - {ssh: "-p 2200 admin@10.0.10.1", delay: 15}
+  tasks:
+    - name: Schedule /system shutdown (scripts skip the interactive confirmation)
+      ansible.builtin.command: >-
+        ssh -o ConnectTimeout=10 {{ item.ssh }}
+        ':execute script=":delay {{ item.delay }}s; /system shutdown"'
+      loop: "{{ mikrotiks }}"
+      changed_when: true
