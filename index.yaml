@@ -437,6 +437,17 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/prowlarr-0.1.0/prowlarr-0.1.0.tgz
     version: 0.1.0
+  prusa-connect:
+  - apiVersion: v2
+    appVersion: v0.1.0-beta.1
+    created: "2026-11-17T11:37:45.647022862Z"
+    description: Prusa Connect, the self-hosted printer server (github.com/prusa3d/prusa-connect)
+    digest: 54f41cc149107ab950ed3de3504420b2f977d7db5b7f967172addc608bac4f49
+    name: prusa-connect
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/prusa-connect-0.1.0/prusa-connect-0.1.0.tgz
+    version: 0.1.0
   radarr:
   - apiVersion: v2
     created: "2026-09-01T23:20:16.411437+02:00"
@@ -487,4 +498,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-09-02T12:25:36.177244067Z"
+generated: "2026-11-17T11:37:45.647058676Z"
