@@ -327,15 +327,16 @@ k3s `v1.37.2+k3s1`, Debian 13 (kernel 6.12), two nodes: `kube-captain` (control 
 |---|---|
 | `homeassistant` | homeassistant, esphome, homebridge, mosquitto (MQTT) |
 | `media-stack` | sonarr, radarr, prowlarr, deluge, flaresolverr |
-| `homelab-services` | adminer, dobby-robot, openmediavault (UI proxy) |
+| `homelab-services` | adminer, dobby-robot, openmediavault (UI proxy), gatus (status page) |
 | `monitoring` | kube-prometheus-stack — prometheus, grafana, alertmanager, operator, kube-state-metrics |
 | `jellyfin`, `navidrome` | media servers |
 | `cert-manager` | cert-manager + cainjector + webhook |
 | `cloudflare-tunnel-ingress-controller` | tunnel controller + cloudflared connector |
 | `kube-system` | coredns, local-path-provisioner, metrics-server |
 
-All 14 ingresses are `cloudflare-tunnel`. One LoadBalancer service is exposed by k3s
-servicelb on both node IPs: `mosquitto` (1883, 9001). `ingress-nginx` held 80/443 for no
+All 14 ingresses are `cloudflare-tunnel`. Two LoadBalancer services are exposed by k3s
+servicelb on both node IPs: `mosquitto` (1883, 9001) and `gatus` (80, the LAN-only status
+page at `status.lan.jehli.net`; checks live in `gatus.yaml`). `ingress-nginx` held 80/443 for no
 consumer until it was removed on 2026-11-10, and `coredns-lan` held 53 until it was retired
 to the router on 2026-09-03.
 

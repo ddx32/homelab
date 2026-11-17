@@ -1,0 +1,130 @@
+# Gatus status page — LAN/Tailscale only, http://status.lan.jehli.net (router A record
+# → 10.0.40.102; servicelb answers on both node IPs). No Ingress on purpose: it lists
+# internal addresses.
+#
+# Gatus watches its config file, and the ConfigMap is mounted as a directory (not subPath),
+# so `kubectl apply -f` of this file is picked up within a minute without a restart.
+# ponytail: memory storage, history resets on pod restart; sqlite on an ssd-data NFS PV if
+# history matters.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatus-config
+  namespace: homelab-services
+data:
+  config.yaml: |
+    ui:
+      title: Status · jehli.net homelab
+      header: jehli.net homelab
+      dashboard-heading: Homelab status
+      dashboard-subheading: Every service, host and network device, checked every minute
+      default-sort-by: group  # default is name, which flattens the groups into one A-Z list
+    storage:
+      type: memory
+
+    x-up: &up ["[CONNECTED] == true", "[STATUS] < 500"]
+    x-ok: &ok ["[STATUS] == 200"]
+    x-conn: &conn ["[CONNECTED] == true"]
+
+    endpoints:
+      # --- 🏠 Smart home ---
+      - {name: Home Assistant, group: "🏠 Smart home", url: "http://10.0.40.102:8123", conditions: *up}
+      - {name: ESPHome, group: "🏠 Smart home", url: "http://esphome-service.homeassistant:6052", conditions: *up}
+      - {name: Homebridge, group: "🏠 Smart home", url: "http://homebridge-service.homeassistant:8581", conditions: *up}
+      - {name: Mosquitto (MQTT), group: "🏠 Smart home", url: "tcp://mosquitto.homeassistant:1883", conditions: *conn}
+      - {name: Dobby robot, group: "🏠 Smart home", url: "http://10.0.20.251", conditions: *up}
+
+      # --- 🎬 Media ---
+      - {name: Jellyfin, group: "🎬 Media", url: "http://jellyfin.jellyfin:8096/health", conditions: *ok}
+      - {name: Navidrome, group: "🎬 Media", url: "http://navidrome.navidrome/ping", conditions: *up}
+
+      # --- 📥 Downloads ---
+      - {name: Sonarr, group: "📥 Downloads", url: "http://sonarr.media-stack/ping", conditions: *up}
+      - {name: Radarr, group: "📥 Downloads", url: "http://radarr.media-stack/ping", conditions: *up}
+      - {name: Prowlarr, group: "📥 Downloads", url: "http://prowlarr.media-stack/ping", conditions: *up}
+      - {name: Deluge, group: "📥 Downloads", url: "http://deluge.media-stack", conditions: *up}
+      - {name: FlareSolverr, group: "📥 Downloads", url: "http://flaresolverr.media-stack:8191/health", conditions: *ok}
+
+      # --- 📊 Monitoring ---
+      - {name: Grafana, group: "📊 Monitoring", url: "http://kube-prometheus-stack-grafana.monitoring/api/health", conditions: *ok}
+      - {name: Prometheus, group: "📊 Monitoring", url: "http://kube-prometheus-stack-prometheus.monitoring:9090/-/ready", conditions: *ok}
+      - {name: Alertmanager, group: "📊 Monitoring", url: "http://kube-prometheus-stack-alertmanager.monitoring:9093/-/ready", conditions: *ok}
+
+      # --- ☸️ Kubernetes ---
+      - {name: k3s API, group: "☸️ Kubernetes", url: "tcp://10.0.40.102:6443", conditions: *conn}
+      - {name: kube-worker, group: "☸️ Kubernetes", url: "icmp://10.0.40.104", conditions: *conn}
+      - {name: Cloudflare tunnel, group: "☸️ Kubernetes", url: "https://ha.jehli.net", conditions: *up}
+
+      # --- 🖥️ Servers & storage ---
+      - {name: pve (Proxmox), group: "🖥️ Servers & storage", url: "https://10.0.10.4:8006", client: {insecure: true}, conditions: *up}
+      - {name: holly (Proxmox), group: "🖥️ Servers & storage", url: "https://10.0.10.5:8006", client: {insecure: true}, conditions: *up}
+      - {name: omv web UI, group: "🖥️ Servers & storage", url: "http://10.0.40.201", conditions: *up}
+      - {name: omv NFS, group: "🖥️ Servers & storage", url: "tcp://10.0.40.201:2049", conditions: *conn}
+      - {name: omv SMB, group: "🖥️ Servers & storage", url: "tcp://10.0.40.201:445", conditions: *conn}
+      - {name: librarian MariaDB, group: "🖥️ Servers & storage", url: "tcp://10.0.40.100:3306", conditions: *conn}
+      - {name: Adminer, group: "🖥️ Servers & storage", url: "http://adminer.homelab-services:8080", conditions: *up}
+
+      # --- 🌐 Network ---
+      - {name: Router (hEX), group: "🌐 Network", url: "icmp://10.0.10.1", conditions: *conn}
+      - {name: Switch (CRS310), group: "🌐 Network", url: "icmp://10.0.10.2", conditions: *conn}
+      - {name: AP (hAP ax S), group: "🌐 Network", url: "icmp://192.168.0.4", conditions: *conn}
+      - name: LAN DNS
+        group: "🌐 Network"
+        # Router's vlan40 address: from pods, queries to 10.0.10.1 time out (they go via the
+        # CRS310's L3 route and the reply comes back on a different path).
+        url: "10.0.40.1"
+        dns: {query-name: nas.lan.jehli.net, query-type: A}
+        conditions: ["[DNS_RCODE] == NOERROR", "[BODY] == 10.0.40.201"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatus
+  namespace: homelab-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatus
+  template:
+    metadata:
+      labels:
+        app: gatus
+    spec:
+      containers:
+        - name: gatus
+          image: twinproduction/gatus:v5.38.0
+          env:
+            - name: GATUS_CONFIG_PATH
+              value: /config/config.yaml
+          ports:
+            - containerPort: 8080
+          securityContext:
+            capabilities:
+              add: [NET_RAW] # icmp:// checks
+          readinessProbe:
+            httpGet: {path: /health, port: 8080}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: gatus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatus
+  namespace: homelab-services
+spec:
+  type: LoadBalancer
+  selector:
+    app: gatus
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

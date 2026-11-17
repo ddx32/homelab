@@ -1,4 +1,4 @@
-# 2026-11-11 12:41:58 by RouterOS 7.25.1
+# 2026-11-17 10:36:14 by RouterOS 7.25.1
 #
 # model = RB750Gr3
 /interface list
@@ -49,6 +49,8 @@ add address=10.0.10.5 comment="LAN infra (was coredns-lan)" name=\
     holly.lan.jehli.net type=A
 add address=10.0.20.230 comment="LAN infra (was coredns-lan)" name=\
     printer-buddy.lan.jehli.net type=A
+add address=10.0.40.102 comment="Gatus status page (k3s servicelb)" name=\
+    status.lan.jehli.net type=A
 /ip firewall address-list
 add address=192.168.0.0/24 comment=\
     "RFC1918 segments - used by VLAN isolation rules" list=internal
