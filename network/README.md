@@ -55,10 +55,14 @@ Search domain handed out on vlan10 and the mgmt /24 is `lan.jehli.net`.
 internet normally, and mgmt, lab and vms reach *into* them freely — the defconf
 "accept established,related" rule sits ahead of the drops, so replies flow.
 
-One exception, and it matters: **IoT is allowed to 10.0.40.0/24 tcp/1883**. Five IoT devices
+Two exceptions, and they matter: **IoT is allowed to 10.0.40.0/24 tcp/1883**. Five IoT devices
 hold long-lived MQTT sessions to mosquitto in k3s; without that rule Home Assistant silently
 loses every sensor. Verified with rule counters — the MQTT accept matched, the drop caught
 everything else.
+
+And **IoT is allowed to the `k3s-nodes` address list (10.0.40.102, .104) tcp/8080**, so the
+printers reach Prusa Connect (`prusa.lan.jehli.net`, k3s servicelb on both nodes). A new k3s
+node goes into that list.
 
 The drops log as `iot-drop` and `guest-drop`. A connection-table snapshot cannot reveal
 periodic traffic (nightly firmware checks, scheduled jobs), so watch

@@ -1,4 +1,4 @@
-# 2026-11-17 12:53:14 by RouterOS 7.25.1
+# 2026-11-17 13:00:56 by RouterOS 7.25.1
 #
 # model = RB750Gr3
 /interface list
@@ -69,6 +69,8 @@ add address=192.168.0.0/24 comment="may reach router management services" \
     list=mgmt-allowed
 add address=10.0.10.0/24 comment="may reach router management services" list=\
     mgmt-allowed
+add address=10.0.40.102 comment=kube-captain list=k3s-nodes
+add address=10.0.40.104 comment=kube-worker list=k3s-nodes
 /ip firewall service-port
 set ftp disabled=yes
 /ip ipsec profile
@@ -170,6 +172,9 @@ add action=accept chain=forward comment="Allow internet traffic" \
 add action=accept chain=forward comment="iot: allow MQTT to broker" \
     dst-address=10.0.40.0/24 dst-port=1883 in-interface=vlan20-iot protocol=\
     tcp
+add action=accept chain=forward comment=\
+    "iot: allow printers to Prusa Connect" dst-address-list=k3s-nodes \
+    dst-port=8080 in-interface=vlan20-iot protocol=tcp
 add action=drop chain=forward comment="isolate iot from other VLANs" \
     dst-address-list=internal in-interface=vlan20-iot log=yes log-prefix=\
     iot-drop
