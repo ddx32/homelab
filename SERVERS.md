@@ -315,7 +315,7 @@ bearing in mind the upstream is a CGNAT PPPoE line.
 pve 148G at 23%, holly 354G at 9%). Not shared between the two hosts, so VMs cannot
 live-migrate.
 
-**Kubernetes** — 14 NFS PVs, all pointing at `10.0.40.201` by IP (see MIGRATION.md for why
+**Kubernetes** — 15 NFS PVs, all pointing at `10.0.40.201` by IP (see MIGRATION.md for why
 not a name), plus one `local-path` PV for mariadb.
 
 ## Kubernetes

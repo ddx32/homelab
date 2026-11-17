@@ -4,8 +4,10 @@
 #
 # Gatus watches its config file, and the ConfigMap is mounted as a directory (not subPath),
 # so `kubectl apply -f` of this file is picked up within a minute without a restart.
-# ponytail: memory storage, history resets on pod restart; sqlite on an ssd-data NFS PV if
-# history matters.
+#
+# History is SQLite on the NAS (/export/ssd-data/gatus, root:users 2777 like mosquitto's,
+# because the export squashes root). One replica with Recreate, so only one writer ever
+# touches the database: SQLite's locking is not reliable over NFS.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -50,7 +52,8 @@ data:
         /* adminer */ .endpoint span[role=link][title="Adminer"]::before { background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMjUuNzQgNTEyLjIgNDYwLjUxIj48cGF0aCBkPSJNNDA5LjggNzcuNyAzOTcuMiA2M2wtNjYuMyA1Ny4zIDY2LjUgNTYuNSAxMi42LTE0LjctNDkuMy00MS45em01NS45IDc3Yy02LjcgMC0xMi4yIDUuNS0xMi4yIDEyLjJzNS41IDEyLjIgMTIuMiAxMi4yIDEyLjItNS41IDEyLjItMTIuMmMwLTYuOC01LjUtMTIuMi0xMi4yLTEyLjJtMzQuNC0xMTJjLTcuMS03LjMtMTYuMS0xMS4yLTI0LjQtMTMuNi03LjQtMi0xNS0zLjEtMjIuNy0zLjMtNi4xLS4yLTEwLjEuMi0xMC4xLjJsMS44IDE5LjNzMTMuMy0xIDI1LjggMi41YzYuMyAxLjggMTIgNC42IDE1LjkgOC41IDMuOCAzLjkgNi40IDguOCA2LjQgMTcuNSAwIDQuNS0xLjIgNi44LTMuMiA5LTIuNCAyLjQtNS40IDQuMy04LjcgNS4zLTcuMiAyLjYtMTUgMi43LTE1IDIuN2gtOS43djUwLjFoMTkuNHYtMzIuNGM0LjEtLjQgNS44LjEgMTEuOS0yLjEgNS42LTIgMTEuNi01LjEgMTYuNS0xMC41IDUuNC02LjEgOC4zLTEzLjkgOC4yLTIyLS4yLTEzLjItNS0yMy45LTEyLjEtMzEuMiIgc3R5bGU9ImZpbGw6I2Y0MzAxYyIvPjxwYXRoIGQ9Ik0yNC42IDQ2Ni4yYzEzLjYgNi4zIDMyIDExLjMgNTQuNiAxNC44IDQ1LjIgNyA5OS45IDcgMTQ1LjEgMCAyMi42LTMuNSA0MS04LjQgNTQuNi0xNC43IDYuOC0zLjIgMTIuNC02LjcgMTYuOS0xMS4xIDQuNC00LjQgNy44LTEwLjIgNy44LTE2LjhWMTQ4LjljMC0xMC4xLTcuMS0xNy42LTE1LjctMjMtOC41LTUuNC0xOS43LTkuNy0zMy4xLTEzLjMtMjYuOS03LjItNjMtMTEuNS0xMDMtMTEuNXMtNzYuMSA0LjMtMTAzIDExLjVjLTEzLjUgMy42LTI0LjYgNy45LTMzLjEgMTMuMy04LjYgNS4zLTE1LjcgMTIuOC0xNS43IDIzdjI4OS40YzAgNi42IDMuMyAxMi40IDcuOCAxNi44IDQuNCA0LjQgMTAgNy45IDE2LjggMTEuMU0yNiAxNDIuMWM1LjgtMy43IDE1LjUtNy43IDI3LjgtMTEgMjQuNS02LjYgNTkuNS0xMC45IDk4LTEwLjlzNzMuNCA0LjMgOTcuOSAxMC45YzEyLjMgMy4zIDIyIDcuMyAyNy44IDExczYuNyA2LjMgNi43IDYuNy0uOSAzLTYuNyA2LjdjLTUuOSAzLjctMTUuNSA3LjctMjcuOCAxMS0yNC41IDYuNi01OS40IDEwLjktOTggMTAuOXMtNzMuNS00LjMtOTgtMTAuOWMtMTIuMy0zLjMtMjEuOS03LjMtMjcuOC0xMXMtNi43LTYuMy02LjctNi43Yy4yLS4zIDEtMi45IDYuOC02LjdtLTYuNyAzMS4zYzguMSA0LjYgMTcuNSA4LjYgMjkuNCAxMS44IDI2LjkgNy4yIDYzIDExLjUgMTAzIDExLjUgMzkuOSAwIDc2LjEtNC4zIDEwMy0xMS41IDExLjktMy4yIDIxLjMtNy4zIDI5LjQtMTEuOHY3MmMwIC4yIDAgMS4xLTIuMSAzLjFxLTUuMSA0LjUtMTEuNCA3LjJjLTEwLjkgNS4xLTI4IDkuOS00OS40IDEzLjItNDIuOCA2LjYtOTYuMyA2LjYtMTM5LjEgMC0yMS40LTMuMy0zOC41LTguMS00OS40LTEzLjJxLTYuMy0yLjctMTEuNC03LjJjLTItMi0yLjEtMi45LTIuMS0zLjF2LTcyem0wIDk2LjNjMS45IDEuMSAzLjIgMi41IDUuMyAzLjUgMTMuNiA2LjQgMzIgMTEuMyA1NC42IDE0LjggNDUuMiA3IDk5LjkgNyAxNDUuMSAwIDIyLjYtMy41IDQxLTguNCA1NC42LTE0LjggMi4xLTEgMy40LTIuNCA1LjMtMy41djcyLjFjMCAuMiAwIDEuMS0yLjEgMy4xcS01LjEgNC41LTExLjQgNy4yYy0xMC45IDUuMS0yOCA5LjktNDkuNCAxMy4yLTQyLjggNi42LTk2LjMgNi42LTEzOS4xIDAtMjEuNC0zLjMtMzguNS04LjEtNDkuNC0xMy4ycS02LjMtMi43LTExLjQtNy4yYy0yLTItMi4xLTIuOS0yLjEtMy4xem0wIDk2LjVjMS45IDEuMSAzLjIgMi41IDUuMyAzLjUgMTMuNiA2LjMgMzIgMTEuMyA1NC42IDE0LjggNDUuMiA3IDk5LjkgNyAxNDUuMSAwIDIyLjYtMy41IDQxLTguNSA1NC42LTE0LjggMi4xLTEgMy40LTIuNCA1LjMtMy41djcyLjFjMCAuMiAwIDEuMS0yLjEgMy4xcS01LjEgNC41LTExLjQgNy4yYy0xMC45IDUuMS0yOCA5LjktNDkuNCAxMy4yLTQyLjggNi42LTk2LjMgNi42LTEzOS4xIDAtMjEuNC0zLjMtMzguNS04LjEtNDkuNC0xMy4ycS02LjMtMi43LTExLjQtNy4yYy0yLTItMi4xLTIuOS0yLjEtMy4xeiIgc3R5bGU9ImZpbGw6IzFlNTc4MSIvPjwvc3ZnPg==); }
         /* mikrotik */ .endpoint span[role=link][title="Router (hEX)"]::before, .endpoint span[role=link][title="Switch (CRS310)"]::before, .endpoint span[role=link][title="AP (hAP ax S)"]::before, .endpoint span[role=link][title="LAN DNS"]::before { background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MTAiIGhlaWdodD0iNjEwIiB2ZXJzaW9uPSIxLjIiPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTU4Ni44IDE5My40djIyMi41YzAgMTMuOC0xLjcgMjUuNi01LjUgMzQuMy0uNyAxLjYtMS41IDMuMi0yLjMgNC43LTUuNSA4LjktMTYuNiAxNy43LTMxLjYgMjUuOUwzNDQuNCA1OTJjLTEyLjYgNi45LTI0LjIgMTEuNC0zNCAxMi43cS0yLjguNC01LjQuNC0yLjcgMC01LjUtLjRjLTkuOC0xLjMtMjEuNC01LjgtMzQtMTIuN0wxNjQgNTM2LjQgNjIuNiA0ODAuOGMtMTUuMS04LjItMjYuMi0xNy0zMS42LTI1LjktNS41LTktNy45LTIyLjUtNy45LTM5VjE5My40YzAtMTMuOCAxLjctMjUuNSA1LjUtMzQuMi43LTEuNyAxLjUtMy4zIDIuNC00LjdxMS4zLTIuMiAzLTQuM2M2LjEtNy41IDE2LTE0LjcgMjguNi0yMS43TDE2NCA3Mi45bDEwMS41LTU1LjZjMTUtOC4yIDI4LjYtMTMgMzkuNS0xM3EyLjYgMCA1LjQuNGM5LjggMS4yIDIxLjQgNS43IDM0IDEyLjZsMTAxLjUgNTUuNiAxMDEuNSA1NS42YzEyLjYgNyAyMi40IDE0LjIgMjguNSAyMS43cTEuOCAyLjEgMy4xIDQuM2MuOCAxLjQgMS42IDMgMi4zIDQuNyAzLjggOC43IDUuNSAyMC40IDUuNSAzNC4ybS0xMDIuNSAzMy4yYzAtOS44LTUuMy0xOC44LTEzLjgtMjMuNGwtMTUyLjctODMuN2MtOC00LjQtMTcuNy00LjQtMjUuNyAwbC0zOC45IDIxLjNjLTQuNiAyLjYtNC42IDkuMiAwIDExLjdsMTE2LjQgNjMuOGM0LjYgMi42IDQuNiA5LjIgMCAxMS43bC01MS44IDI4LjRjLTggNC40LTE3LjcgNC40LTI1LjcgMGwtMTEyLTYxLjRjLTgtNC40LTE3LjctNC40LTI1LjcgMGwtMTQuOSA4LjJjLTguNiA0LjctMTMuOSAxMy42LTEzLjkgMjMuNHY3bDEzNS41IDc0LjNjOC42IDQuNiAxMy45IDEzLjYgMTMuOSAyMy4zdjE0MS40YzAgNC44IDIuNiA5LjMgNi45IDExLjdsMTAuMiA1LjZjOCA0LjQgMTcuNyA0LjQgMjUuNyAwbDEwLjMtNS42YzQuMi0yLjQgNi45LTYuOSA2LjktMTEuN1YzMzEuMmMwLTkuNyA1LjMtMTguNyAxMy45LTIzLjNsNjUuNS0zNmM0LjUtMi40IDkuOS44IDkuOSA1Ljl2MTQyLjRjMCA1LjEgNS40IDguMyA5LjkgNS45bDM2LjMtMTkuOWM4LjUtNC43IDEzLjgtMTMuNyAxMy44LTIzLjR6bS0yOTguNyA3OC4yYzAtNC44LTIuNi05LjMtNi45LTExLjdsLTQzLjItMjMuN2MtNC41LTIuNC05LjkuOC05LjkgNS45djEwNy41YzAgOS43IDUuMyAxOC43IDEzLjkgMjMuNGwzNi4zIDE5LjljNC40IDIuNCA5LjgtLjggOS44LTUuOXoiIHN0eWxlPSJmaWxsOiMyNjMwMzciLz48L3N2Zz4=); }
     storage:
-      type: memory
+      type: sqlite
+      path: /data/gatus.db
 
     x-up: &up ["[CONNECTED] == true", "[STATUS] < 500"]
     x-ok: &ok ["[STATUS] == 200"]
@@ -113,6 +116,8 @@ metadata:
   namespace: homelab-services
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: gatus
@@ -140,10 +145,15 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: data
+              mountPath: /data
       volumes:
         - name: config
           configMap:
             name: gatus-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: gatus-data-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -158,3 +168,32 @@ spec:
     - name: http
       port: 80
       targetPort: 8080
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gatus-data-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  nfs:
+    path: /export/ssd-data/gatus
+    server: 10.0.40.201
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gatus-data-pvc
+  namespace: homelab-services
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: gatus-data-pv
+  storageClassName: nfs
