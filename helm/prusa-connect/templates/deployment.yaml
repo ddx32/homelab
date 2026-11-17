@@ -26,14 +26,18 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       initContainers:
-        # Upstream's gate: refuses to start a new version against state it can't migrate.
+        # The setup wizard writes config.d/ beside the config file, so the file has to live on
+        # the data volume: copied from the ConfigMap on every start (a subPath mount would
+        # have kubelet create it as root on the root-squashed NFS export).
+        # Then upstream's gate: refuses to start a new version against state it can't migrate.
         - name: upgrade-check
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: [/bin/sh, -ec]
           args:
             - >-
+              cp /etc/prusa-connect/config.yaml /data/config.yaml;
               if [ -e /data/config.d/authz.db ]; then
-                exec /prusa_connect upgrade check -config /etc/prusa-connect/config.yaml;
+                exec /prusa_connect upgrade check -config /data/config.yaml;
               fi
           securityContext:
             allowPrivilegeEscalation: false
@@ -51,7 +55,7 @@ spec:
       containers:
         - name: server
           image: {{ .Values.image }}:{{ .Values.imageTag }}
-          args: [core, -config, /etc/prusa-connect/config.yaml]
+          args: [core, -config, /data/config.yaml]
           ports:
             - name: api
               containerPort: {{ .Values.port }}
