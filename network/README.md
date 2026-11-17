@@ -127,7 +127,7 @@ A records on the router replaced a two-replica CoreDNS behind a LoadBalancer in 
 | `holly.lan.jehli.net` | 10.0.10.5 |
 | `printer-buddy.lan.jehli.net` | 10.0.20.230 |
 | `status.lan.jehli.net` | 10.0.40.102 (Gatus status page, k3s servicelb) |
-| `connect.lan.jehli.net` | 10.0.40.102 (Prusa Connect, printers connect here; k3s servicelb) |
+| `prusa.lan.jehli.net` | 10.0.40.102 (Prusa Connect, printers connect here; k3s servicelb. Keep it ≤ 20 chars: printer firmware stores only 20) |
 
 Why the router and not the cluster: these are fixed addresses, and the old path made
 `lan.jehli.net` die with `kube-captain`. `type=FWD` static entries take **one** `forward-to`

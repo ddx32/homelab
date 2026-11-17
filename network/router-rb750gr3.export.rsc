@@ -1,4 +1,4 @@
-# 2026-11-17 12:44:04 by RouterOS 7.25.1
+# 2026-11-17 12:53:14 by RouterOS 7.25.1
 #
 # model = RB750Gr3
 /interface list
@@ -53,7 +53,7 @@ add address=10.0.40.102 comment="Gatus status page (k3s servicelb)" name=\
     status.lan.jehli.net type=A
 add address=10.0.40.102 comment=\
     "Prusa Connect, printers connect here (k3s servicelb)" name=\
-    connect.lan.jehli.net type=A
+    prusa.lan.jehli.net type=A
 /ip firewall address-list
 add address=192.168.0.0/24 comment=\
     "RFC1918 segments - used by VLAN isolation rules" list=internal
