@@ -1,76 +1,24 @@
-# 2026-09-03 12:09:05 by RouterOS 7.20.4
+# 2026-11-17 10:54:39 by RouterOS 7.25.1
 #
 # model = E62iUGS-2axD5axT
-/interface bridge
-add admin-mac=04:F4:1C:E9:5A:4B auto-mac=no comment=defconf name=bridge \
-    vlan-filtering=yes
-/interface vlan
-add interface=bridge name=vlan1-mgmt vlan-id=1
-/interface wifi datapath
-add bridge=bridge name=dp-vlan10 vlan-id=10
-add bridge=bridge name=dp-vlan20 vlan-id=20
-add bridge=bridge name=dp-vlan30 vlan-id=30
+/ip neighbor discovery-settings
+set discover-interface-list=all
 /interface wifi security
 add authentication-types=wpa2-psk,wpa3-psk disabled=no ft=yes ft-over-ds=yes \
     name=sec-main
 add authentication-types=wpa2-psk disabled=no name=sec-iot
 add authentication-types=wpa2-psk,wpa3-psk disabled=no name=sec-guest
-/interface wifi
-set [ find default-name=wifi1 ] channel.band=2ghz-ax .skip-dfs-channels=\
-    10min-cac .width=20/40mhz configuration.mode=ap .ssid=Jehli-Fi datapath=\
-    dp-vlan10 disabled=no security=sec-main security.authentication-types=\
-    wpa2-psk,wpa3-psk .ft=yes .ft-over-ds=yes
-set [ find default-name=wifi2 ] channel.band=5ghz-ax .frequency=\
-    5500,5520,5540,5560 .skip-dfs-channels=10min-cac .width=20/40/80mhz \
-    configuration.mode=ap .ssid=Jehli-Fi datapath=dp-vlan10 disabled=no \
-    security=sec-main security.authentication-types=wpa2-psk,wpa3-psk .ft=yes \
-    .ft-over-ds=yes
-add configuration.mode=ap .ssid="Jehli-Fi Guest" datapath=dp-vlan30 disabled=\
-    no mac-address=06:F4:1C:E9:5A:51 master-interface=wifi1 name=\
-    wifi-guest-2g security=sec-guest
-add configuration.mode=ap .ssid="Jehli-Fi Guest" datapath=dp-vlan30 disabled=\
-    no mac-address=06:F4:1C:E9:5A:52 master-interface=wifi2 name=\
-    wifi-guest-5g security=sec-guest
-add configuration.mode=ap .ssid=jehlifi_iot datapath=dp-vlan20 disabled=no \
-    mac-address=06:F4:1C:E9:5A:50 master-interface=wifi1 name=wifi-iot \
-    security=sec-iot
-/disk settings
-set auto-media-interface=bridge auto-media-sharing=yes auto-smb-sharing=yes
-/interface bridge port
-add bridge=bridge comment=defconf frame-types=\
-    admit-only-untagged-and-priority-tagged interface=ether2
-add bridge=bridge comment=defconf frame-types=\
-    admit-only-untagged-and-priority-tagged interface=ether3
-add bridge=bridge comment=defconf frame-types=\
-    admit-only-untagged-and-priority-tagged interface=ether4
-add bridge=bridge comment=defconf frame-types=\
-    admit-only-untagged-and-priority-tagged interface=ether5
-add bridge=bridge comment=defconf frame-types=\
-    admit-only-untagged-and-priority-tagged interface=sfp1
-add bridge=bridge interface=ether1
-/ip neighbor discovery-settings
-set discover-interface-list=all
-/interface bridge vlan
-add bridge=bridge tagged=bridge untagged=\
-    ether1,ether2,ether3,ether4,ether5,sfp1 vlan-ids=1
-add bridge=bridge tagged=ether1,wifi1,wifi2 vlan-ids=10
-add bridge=bridge tagged=ether1,wifi-iot vlan-ids=20
-add bridge=bridge tagged=ether1,wifi-guest-2g,wifi-guest-5g vlan-ids=30
-/ip address
-add address=192.168.0.4/24 interface=vlan1-mgmt network=192.168.0.0
-/ip dns
-set servers=192.168.0.1
 /ip dns static
 add address=192.168.88.1 comment=defconf name=router.lan type=A
-/ip route
-add gateway=192.168.0.1
+/ip ssh
+set host-key-type=rsa known-hosts-validation=no
 /ip service
 set ftp disabled=yes
-set ssh address=192.168.0.0/24,10.0.10.0/24
+set ssh available-from=192.168.0.0/24,10.0.10.0/24
 set telnet disabled=yes
-set www address=192.168.0.0/24,10.0.10.0/24
-set www-ssl address=192.168.0.0/24,10.0.10.0/24
-set winbox address=192.168.0.0/24,10.0.10.0/24
+set www available-from=192.168.0.0/24,10.0.10.0/24
+set www-ssl available-from=192.168.0.0/24,10.0.10.0/24
+set winbox available-from=192.168.0.0/24,10.0.10.0/24
 set api disabled=yes
 set api-ssl disabled=yes
 /ipv6 firewall address-list
@@ -83,6 +31,23 @@ add address=100::/64 comment="defconf: discard only " list=bad_ipv6
 add address=2001:db8::/32 comment="defconf: documentation" list=bad_ipv6
 add address=2001:10::/28 comment="defconf: ORCHID" list=bad_ipv6
 add address=3ffe::/16 comment="defconf: 6bone" list=bad_ipv6
+/interface bridge
+add admin-mac=04:F4:1C:E9:5A:4B auto-mac=no comment=defconf name=bridge \
+    vlan-filtering=yes
+/interface vlan
+add interface=bridge name=vlan1-mgmt vlan-id=1
+/disk settings
+set auto-media-interface=bridge auto-media-sharing=yes auto-smb-sharing=yes
+/interface wifi datapath
+add bridge=bridge name=dp-vlan10 vlan-id=10
+add bridge=bridge name=dp-vlan20 vlan-id=20
+add bridge=bridge name=dp-vlan30 vlan-id=30
+/ip address
+add address=192.168.0.4/24 interface=vlan1-mgmt network=192.168.0.0
+/ip dns
+set servers=192.168.0.1
+/ip route
+add gateway=192.168.0.1
 /ipv6 firewall filter
 add action=accept chain=input comment=\
     "defconf: accept established,related,untracked" connection-state=\
@@ -104,6 +69,64 @@ add action=accept chain=input comment="defconf: accept ipsec ESP" protocol=\
     ipsec-esp
 add action=accept chain=input comment=\
     "defconf: accept all that matches ipsec policy" ipsec-policy=in,ipsec
+/system clock
+set time-zone-name=Europe/Prague
+/system identity
+set name=hAP-ax-S
+/system ntp client
+set enabled=yes
+/system ntp client servers
+add address=192.168.0.1
+add address=time.google.com
+/user ssh-keys
+add info=jsolon@sleeper.local key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDWZE0\
+    iTc2TT6KalPt0f0Xqkft9WgyTK72CbqKYKCkkmpeckKA6zBBWW4MOztoIJ7GBLqWiZudLUbqRh\
+    uwfqcQvoVwGguv9UXN2FxP09fnGJTTtcuL6jVqEE50/aKLI6IvsFTqt8KtDnwef+rpRId5ULQp\
+    2kYlcvUrxFaVx7AwEOXV+x9eRIIvf7oLAcbVz04qwozX/m1LpmT/I8+r9tqukFG3f/zKs+CQdP\
+    o654KKtuGvVZQBumUphwgKIleAINxeAE/Hb3DhxQbHHCy44vxwPiGZWcJbceGZKBw7ZBfdYVRN\
+    AlAa8VZ/fJo23/Q6jveDR3/qo8BfRx0mh1B4ck63Ct0o22Zhr7waHgabDFg2qBbnT9TMm5l51m\
+    b09XHJ1xOECzYe+F4TUt4IUke4wn1hWQF8goZ5NmjJ2scPYrsO82y5ZVXEnJK/Lnv/cttEMbH4\
+    4GniH+hJ6jrutIURUlWX7KXKrS4KDTdfuMZ8/KAiZ6lfZ0AEDqeaV5UYkeCjshrc=" user=<REDACTED>
+    admin
+/interface wifi
+set [ find default-name=wifi1 ] channel.band=2ghz-ax .frequency=\
+    2412,2437,2462 .skip-dfs-channels=10min-cac .width=20mhz \
+    configuration.mode=ap .ssid=Jehli-Fi datapath=dp-vlan10 disabled=no \
+    security=sec-main security.authentication-types=wpa2-psk,wpa3-psk .ft=yes \
+    .ft-over-ds=yes
+set [ find default-name=wifi2 ] channel.band=5ghz-ax .frequency=\
+    5180,5200,5220,5240 .skip-dfs-channels=10min-cac .width=20/40mhz \
+    configuration.mode=ap .ssid=Jehli-Fi datapath=dp-vlan10 disabled=no \
+    security=sec-main security.authentication-types=wpa2-psk,wpa3-psk .ft=yes \
+    .ft-over-ds=yes
+add configuration.mode=ap .ssid="Jehli-Fi Guest" datapath=dp-vlan30 disabled=\
+    no mac-address=06:F4:1C:E9:5A:51 master-interface=wifi1 name=\
+    wifi-guest-2g security=sec-guest
+add configuration.mode=ap .ssid="Jehli-Fi Guest" datapath=dp-vlan30 disabled=\
+    no mac-address=06:F4:1C:E9:5A:52 master-interface=wifi2 name=\
+    wifi-guest-5g security=sec-guest
+add configuration.mode=ap .ssid=jehlifi_iot datapath=dp-vlan20 disabled=no \
+    mac-address=06:F4:1C:E9:5A:50 master-interface=wifi1 name=wifi-iot \
+    security=sec-iot
+/interface bridge port
+add bridge=bridge comment=defconf frame-types=\
+    admit-only-untagged-and-priority-tagged interface=ether2
+add bridge=bridge comment=defconf frame-types=\
+    admit-only-untagged-and-priority-tagged interface=ether3
+add bridge=bridge comment=defconf frame-types=\
+    admit-only-untagged-and-priority-tagged interface=ether4
+add bridge=bridge comment=defconf frame-types=\
+    admit-only-untagged-and-priority-tagged interface=ether5
+add bridge=bridge comment=defconf frame-types=\
+    admit-only-untagged-and-priority-tagged interface=sfp1
+add bridge=bridge interface=ether1
+/interface bridge vlan
+add bridge=bridge tagged=bridge untagged=\
+    ether1,ether2,ether3,ether4,ether5,sfp1 vlan-ids=1
+add bridge=bridge tagged=ether1,wifi1,wifi2 vlan-ids=10
+add bridge=bridge tagged=ether1,wifi-iot vlan-ids=20
+add bridge=bridge tagged=ether1,wifi-guest-2g,wifi-guest-5g vlan-ids=30
+/ipv6 firewall filter
 add action=drop chain=input comment=\
     "defconf: drop everything else not coming from LAN" in-interface-list=\
     !*2000011
@@ -134,15 +157,6 @@ add action=accept chain=forward comment=\
 add action=drop chain=forward comment=\
     "defconf: drop everything else not coming from LAN" in-interface-list=\
     !*2000011
-/system clock
-set time-zone-name=Europe/Prague
-/system identity
-set name=hAP-ax-S
-/system ntp client
-set enabled=yes
-/system ntp client servers
-add address=192.168.0.1
-add address=time.google.com
 /tool mac-server
 set allowed-interface-list=*2000011
 /tool mac-server mac-winbox
