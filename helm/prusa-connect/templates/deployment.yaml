@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  replicas: 1
+  # One writer only: authz.db is SQLite, and its locking is not reliable over NFS.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # Upstream's gate: refuses to start a new version against state it can't migrate.
+        - name: upgrade-check
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          command: [/bin/sh, -ec]
+          args:
+            - >-
+              if [ -e /data/config.d/authz.db ]; then
+                exec /prusa_connect upgrade check -config /etc/prusa-connect/config.yaml;
+              fi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prusa-connect
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: server
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          args: [core, -config, /etc/prusa-connect/config.yaml]
+          ports:
+            - name: api
+              containerPort: {{ .Values.port }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          startupProbe:
+            httpGet: {path: /api/v1/health, port: api}
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet: {path: /api/v1/health, port: api}
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /api/v1/readiness, port: api}
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 2Gi}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prusa-connect
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Values.name }}-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}-pvc
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi

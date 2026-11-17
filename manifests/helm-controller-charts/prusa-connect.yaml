@@ -1,0 +1,32 @@
+# Prusa Connect — web UI public at https://connect.jehli.net (cloudflare-tunnel). Printers use
+# the LAN LoadBalancer instead, http://<node IP>:8080 (servicelb answers on 10.0.40.102 and .104).
+#
+# State (authz.db, resource overlay, print files) is on the NAS at /export/ssd-data/prusa-connect,
+# owned by 10001:10001, the image's user.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prusa-connect-data
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  nfs:
+    path: /export/ssd-data/prusa-connect
+    server: 10.0.40.201
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: prusa-connect
+  namespace: homelab-services
+spec:
+  repo: https://ddx32.github.io/homelab
+  chart: prusa-connect
+  targetNamespace: homelab-services
+  version: 0.1.0
+  valuesContent: |-
+    host: connect.jehli.net

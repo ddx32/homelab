@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-config
+data:
+  # Upstream's deploy/kubernetes config, with the state on one volume at /data.
+  config.yaml: |
+    core:
+      api:
+        addr: ":{{ .Values.port }}"
+      log:
+        level: {{ .Values.logLevel }}
+        format: json
+      overlay: /data/config.d/resources.json
+      authz:
+        database: /data/config.d/authz.db
+      principal: operator
+      site: local
+      shutdown_timeout: 15s
+    resources:
+      storage:
+        local:
+          type: filesystem
+          enabled: true
+          required: true
+          config:
+            root: /data/storage

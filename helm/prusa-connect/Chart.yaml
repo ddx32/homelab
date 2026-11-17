@@ -1,0 +1,6 @@
+apiVersion: v2
+name: prusa-connect
+description: Prusa Connect, the self-hosted printer server (github.com/prusa3d/prusa-connect)
+type: application
+version: 0.1.0
+appVersion: v0.1.0-beta.1
