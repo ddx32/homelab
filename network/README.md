@@ -115,7 +115,7 @@ client ──▶ router (10.0.10.1 / 192.168.0.1)
               └── everything else ──▶ 8.8.8.8, 1.1.1.1
 ```
 
-**LAN name resolution does not depend on the cluster** (since 2026-09-03). Seven `/ip dns static`
+**LAN name resolution does not depend on the cluster** (since 2026-09-03). Eight `/ip dns static`
 A records on the router replaced a two-replica CoreDNS behind a LoadBalancer in k3s:
 
 | Name | Address |
@@ -127,6 +127,7 @@ A records on the router replaced a two-replica CoreDNS behind a LoadBalancer in 
 | `holly.lan.jehli.net` | 10.0.10.5 |
 | `printer-buddy.lan.jehli.net` | 10.0.20.230 |
 | `status.lan.jehli.net` | 10.0.40.102 (Gatus status page, k3s servicelb) |
+| `connect.lan.jehli.net` | 10.0.40.102 (Prusa Connect, printers connect here; k3s servicelb) |
 
 Why the router and not the cluster: these are fixed addresses, and the old path made
 `lan.jehli.net` die with `kube-captain`. `type=FWD` static entries take **one** `forward-to`
