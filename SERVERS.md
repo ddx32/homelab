@@ -60,6 +60,10 @@ Notes from the 8 → 9 upgrade, for the next major one:
   Its target, a "capture VM" at `10.0.40.210`, no longer existed. The service is disabled
   (not deleted). Kernel logs off-host would need netconsole on a dedicated NIC, or journald/
   rsyslog forwarding instead.
+- The upgrade adds `/etc/apt/sources.list.d/pve-enterprise.sources`. With no subscription it
+  answers 401, so `apt-get update` exits 100 and the nightly update check fails silently
+  (unnoticed 2026-11-10 → 11-19). Fixed on both nodes with `Enabled: no` in that file (not
+  deleted: a package upgrade would bring it back); updates come from `pve-no-subscription`.
 
 ## pve hard freezes
 
@@ -75,6 +79,8 @@ PSI 0); kube-captain was at ~95% of its 8 GB.
 - 2026-11-19: NVMe APST off (`nvme_core.default_ps_max_latency_us=0` in
   `/etc/default/grub`, backup `grub.bak-2026-11-19`). The disk is a DRAM-less Toshiba BG3
   (`KBG30ZMV256G`), a known APST troublemaker. If pve still freezes with it, remove it.
+  Same day, both nodes went from kernel 7.0.14-28 to 7.0.14-30, so a quiet spell after this
+  can't be credited to either change alone.
 
 ## VMs
 
