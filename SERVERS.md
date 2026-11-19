@@ -61,6 +61,21 @@ Notes from the 8 → 9 upgrade, for the next major one:
   (not deleted). Kernel logs off-host would need netconsole on a dedicated NIC, or journald/
   rsyslog forwarding instead.
 
+## pve hard freezes
+
+pve (HP ProDesk 600 G4 DM, BIOS Q22 02.16) freezes now and then: no ping, the journal just
+stops, nothing in pstore, nothing caught by netconsole. Last one 2026-11-19 ~09:20, 5 h until a
+manual power-cycle. Host memory was not the cause that time (5 GB available, no swap, memory
+PSI 0); kube-captain was at ~95% of its 8 GB.
+
+- Tried, still in place: `intel_idle.max_cstate=1`, BIOS update, iTCO hardware watchdog
+  (`watchdog-mux`, 10 s). The watchdog is armed and fed but does **not** reset the box during
+  a freeze, so don't count on it.
+- ASPM is BIOS-owned (`FADT indicates ASPM is unsupported`), so `pcie_aspm=` does nothing.
+- 2026-11-19: NVMe APST off (`nvme_core.default_ps_max_latency_us=0` in
+  `/etc/default/grub`, backup `grub.bak-2026-11-19`). The disk is a DRAM-less Toshiba BG3
+  (`KBG30ZMV256G`), a known APST troublemaker. If pve still freezes with it, remove it.
+
 ## VMs
 
 VMID's last octet matches the host's last octet — VM 102 is `10.0.40.102`. All are `tag=40`
