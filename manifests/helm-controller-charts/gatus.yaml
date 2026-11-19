@@ -59,10 +59,21 @@ data:
     x-up: &up ["[CONNECTED] == true", "[STATUS] < 500"]
     x-ok: &ok ["[STATUS] == 200"]
     x-conn: &conn ["[CONNECTED] == true"]
+    x-alert: &alert [{type: ntfy}]
+
+    # Push to the ntfy app. Gatus runs on kube-worker (holly), so it still alerts when pve
+    # freezes; if holly dies there is nobody left to alert. The topic is the only secret:
+    # it lives in the gatus-ntfy Secret, not in git
+    # (kubectl -n homelab-services get secret gatus-ntfy -o jsonpath='{.data.topic}' | base64 -d).
+    alerting:
+      ntfy:
+        topic: "${NTFY_TOPIC}"
+        priority: 4
+        default-alert: {failure-threshold: 3, success-threshold: 2, send-on-resolved: true}
 
     endpoints:
       # --- 🏠 Smart home ---
-      - {name: Home Assistant, group: "🏠 Smart home", url: "http://10.0.40.102:8123", conditions: *up}
+      - {name: Home Assistant, group: "🏠 Smart home", url: "http://10.0.40.102:8123", conditions: *up, alerts: *alert}
       - {name: ESPHome, group: "🏠 Smart home", url: "http://esphome-service.homeassistant:6052", conditions: *up}
       - {name: Homebridge, group: "🏠 Smart home", url: "http://homebridge-service.homeassistant:8581", conditions: *up}
       - {name: Mosquitto (MQTT), group: "🏠 Smart home", url: "tcp://mosquitto.homeassistant:1883", conditions: *conn}
@@ -88,10 +99,10 @@ data:
       # --- ☸️ Kubernetes ---
       - {name: k3s API, group: "☸️ Kubernetes", url: "tcp://10.0.40.102:6443", conditions: *conn}
       - {name: kube-worker, group: "☸️ Kubernetes", url: "icmp://10.0.40.104", conditions: *conn}
-      - {name: Cloudflare tunnel, group: "☸️ Kubernetes", url: "https://ha.jehli.net", conditions: *up}
+      - {name: Cloudflare tunnel, group: "☸️ Kubernetes", url: "https://ha.jehli.net", conditions: *up, alerts: *alert}
 
       # --- 🖥️ Servers & storage ---
-      - {name: pve (Proxmox), group: "🖥️ Servers & storage", url: "https://10.0.10.4:8006", client: {insecure: true}, conditions: *up}
+      - {name: pve (Proxmox), group: "🖥️ Servers & storage", url: "https://10.0.10.4:8006", client: {insecure: true}, conditions: *up, alerts: *alert}
       - {name: holly (Proxmox), group: "🖥️ Servers & storage", url: "https://10.0.10.5:8006", client: {insecure: true}, conditions: *up}
       - {name: omv web UI, group: "🖥️ Servers & storage", url: "http://10.0.40.201", conditions: *up}
       - {name: omv NFS, group: "🖥️ Servers & storage", url: "tcp://10.0.40.201:2049", conditions: *conn}
@@ -128,12 +139,16 @@ spec:
       labels:
         app: gatus
     spec:
+      # Off pve, so it can still alert when pve freezes (kube-worker is on holly).
+      nodeSelector: {kubernetes.io/hostname: kube-worker}
       containers:
         - name: gatus
           image: twinproduction/gatus:v5.38.0
           env:
             - name: GATUS_CONFIG_PATH
               value: /config/config.yaml
+            - name: NTFY_TOPIC
+              valueFrom: {secretKeyRef: {name: gatus-ntfy, key: topic}}
           ports:
             - containerPort: 8080
           securityContext:
