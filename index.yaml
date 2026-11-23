@@ -460,6 +460,15 @@ entries:
     version: 0.1.0
   radarr:
   - apiVersion: v2
+    created: "2026-11-23T15:36:00.011481083Z"
+    description: Movie library manager that monitors RSS feeds and downloads new releases
+    digest: ac415128bb8bdf4cb734c98d74668e97064d738e21d61d9852da92f3d7e0c7a7
+    name: radarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/radarr-0.1.2/radarr-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2026-09-01T23:20:16.411437+02:00"
     description: Movie library manager that monitors RSS feeds and downloads new releases
     digest: a49e2aa2c14e34ca7ddd534ce725ee4a98b7b04fe8b57e312971327fc86e2ac9
@@ -478,6 +487,16 @@ entries:
     - https://github.com/ddx32/homelab/releases/download/radarr-0.1.0/radarr-0.1.0.tgz
     version: 0.1.0
   sonarr:
+  - apiVersion: v2
+    created: "2026-11-23T15:36:00.2186589Z"
+    description: TV-show library manager that monitors RSS feeds and downloads new
+      episodes
+    digest: b8cf3e346289b9eb6cb4742c1e6e6b24603be38735db07a5a96734bfd63d3eec
+    name: sonarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/sonarr-0.1.2/sonarr-0.1.2.tgz
+    version: 0.1.2
   - apiVersion: v2
     created: "2026-09-01T23:20:16.411572+02:00"
     description: TV-show library manager that monitors RSS feeds and downloads new
@@ -508,4 +527,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-11-17T11:56:12.936833812Z"
+generated: "2026-11-23T15:36:00.218729176Z"
