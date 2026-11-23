@@ -7,7 +7,7 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: radarr
   targetNamespace: media-stack
-  version: 0.1.1
+  version: 0.1.2
   valuesContent: |-
     version: release-6.4.4.10685
     nfs:

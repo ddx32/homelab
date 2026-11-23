@@ -4,6 +4,9 @@ metadata:
   name: {{ .Values.name }}
 spec:
   replicas: 1
+  # Two pods must never open the same SQLite DB, and the RWO local volume can't be shared anyway.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: {{ .Values.name }}
@@ -12,6 +15,9 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
+      # local-path pins /config to this node; kube-worker is off pve (hard freezes), next to omv.
+      nodeSelector:
+        kubernetes.io/hostname: kube-worker
       containers:
       - image: {{ .Values.image }}:{{ .Values.version }}
         imagePullPolicy: "Always"
@@ -28,10 +34,15 @@ spec:
         volumeMounts:
           - mountPath: /config
             name: config
+          - mountPath: /backups
+            name: backups
           - mountPath: /data
             name: media
       volumes:
         - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}-config-local
+        - name: backups
           persistentVolumeClaim:
             claimName: {{ .Values.name }}-config-pvc
         - name: media

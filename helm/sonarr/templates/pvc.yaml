@@ -25,3 +25,20 @@ spec:
       storage: 100Gi
   volumeName: {{ .Values.name }}-media-pv
   storageClassName: nfs
+
+---
+# SQLite must not live on NFS (lock round-trips stalled the app for minutes), so /config is
+# node-local. "keep" stops an uninstall from deleting it; backups go to the NFS volume above.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.name }}-config-local
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: local-path
