@@ -15,9 +15,11 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
-      # local-path pins /config to this node; kube-worker is off pve (hard freezes), next to omv.
+      # Set it: /config is a local-path volume, so the pod must stay on the node that holds it.
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-        kubernetes.io/hostname: kube-worker
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - image: {{ .Values.image }}:{{ .Values.version }}
         imagePullPolicy: "Always"
