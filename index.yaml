@@ -420,6 +420,15 @@ entries:
     version: 0.1.0
   prowlarr:
   - apiVersion: v2
+    created: "2026-11-23T15:45:50.749621001Z"
+    description: Indexer manager and proxy for the *arr stack
+    digest: d554274e6edd42c083912e3f952c1fa3c966dbabbcdc96cd1559d1f33d5c8bd8
+    name: prowlarr
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/prowlarr-0.1.2/prowlarr-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2026-09-01T23:20:16.411297+02:00"
     description: Indexer manager and proxy for the *arr stack
     digest: 1434930bc71af6a490ab6473cefc0d4b8fb4240eaf6a7d35606c04baa0e02994
@@ -546,4 +555,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-11-23T15:38:21.849060278Z"
+generated: "2026-11-23T15:45:50.749728864Z"
