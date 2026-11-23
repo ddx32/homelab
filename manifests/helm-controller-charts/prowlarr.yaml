@@ -7,7 +7,7 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: prowlarr
   targetNamespace: media-stack
-  version: 0.1.1
+  version: 0.1.2
   valuesContent: |-
     version: release-2.7.0.5723
     nfs:
@@ -17,6 +17,9 @@ spec:
     ingress:
       host: prowlarr.jehli.net
     ingressClassName: cloudflare-tunnel
+    # /config is node-local; kube-worker is off pve (hard freezes) and next to omv.
+    nodeSelector:
+      kubernetes.io/hostname: kube-worker
 ---
 apiVersion: apps/v1
 kind: Deployment

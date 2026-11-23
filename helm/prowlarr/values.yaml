@@ -12,3 +12,4 @@ ingress:
 ingressClassName: nginx
 containerPorts:
   webInterface: 9696
+nodeSelector: {}
