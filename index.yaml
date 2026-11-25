@@ -448,6 +448,16 @@ entries:
     version: 0.1.0
   prusa-connect:
   - apiVersion: v2
+    appVersion: v0.1.0-beta.2
+    created: "2026-11-25T08:17:22.479046779Z"
+    description: Prusa Connect, the self-hosted printer server (github.com/prusa3d/prusa-connect)
+    digest: ca2dfd6c62ee18607df4a8d0d2d9483b1617a7c485d2e2b51898202fdfeee3e7
+    name: prusa-connect
+    type: application
+    urls:
+    - https://github.com/ddx32/homelab/releases/download/prusa-connect-0.1.2/prusa-connect-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: v0.1.0-beta.1
     created: "2026-11-17T11:56:12.936754963Z"
     description: Prusa Connect, the self-hosted printer server (github.com/prusa3d/prusa-connect)
@@ -555,4 +565,4 @@ entries:
     urls:
     - https://github.com/ddx32/homelab/releases/download/transmission-0.1.2/transmission-0.1.2.tgz
     version: 0.1.2
-generated: "2026-11-23T15:45:50.749728864Z"
+generated: "2026-11-25T08:17:22.479206608Z"
