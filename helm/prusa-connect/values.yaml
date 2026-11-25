@@ -7,6 +7,8 @@ port: 8080
 serviceType: LoadBalancer
 storage: 20Gi
 storageClassName: nfs
+configStorage: 2Gi
+nodeSelector: {}
 volumeName: prusa-connect-data
 logLevel: info
 host: prusa-connect.example.org

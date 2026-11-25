@@ -27,7 +27,10 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: prusa-connect
   targetNamespace: homelab-services
-  version: 0.1.3
+  version: 0.1.4
   valuesContent: |-
     imageTag: 0.1.0-beta.2
     host: connect.jehli.net
+    # config.d (the SQLite databases) is node-local; kube-worker is off pve (hard freezes).
+    nodeSelector:
+      kubernetes.io/hostname: kube-worker

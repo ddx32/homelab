@@ -10,3 +10,20 @@ spec:
       storage: {{ .Values.storage }}
   storageClassName: {{ .Values.storageClassName }}
   volumeName: {{ .Values.volumeName }}
+---
+# config.d holds the SQLite databases, which must not live on NFS (lock round-trips through
+# omv stalled logins and device writes), so it is node-local. "keep" stops an uninstall
+# from deleting it. Print files stay on the NFS volume above.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.name }}-config-local
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.configStorage }}
+  storageClassName: local-path
