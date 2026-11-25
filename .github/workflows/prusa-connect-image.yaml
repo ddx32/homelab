@@ -1,5 +1,6 @@
 # Upstream publishes no container image, so build theirs (docker/server/Dockerfile) at a
-# release tag. Bump PRUSA_CONNECT_REF here and imageTag in helm/prusa-connect to upgrade.
+# release tag. Bump PRUSA_CONNECT_REF here and imageTag in
+# manifests/helm-controller-charts/prusa-connect.yaml to upgrade.
 # The package is private on first push: make it public once in its GitHub settings.
 name: Build Prusa Connect image
 

@@ -29,4 +29,5 @@ spec:
   targetNamespace: homelab-services
   version: 0.1.2
   valuesContent: |-
+    imageTag: v0.1.0-beta.2
     host: connect.jehli.net

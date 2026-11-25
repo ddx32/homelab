@@ -15,3 +15,11 @@ HA rewrites `.storage` while running, then scale back to 1.
 `trusted_proxies` must include the k3s node IPs (`10.0.40.102`, `10.0.40.104`), not
 just the pod CIDR. HA is `hostNetwork`, so when cloudflared runs on the other node its
 traffic arrives SNATed to that node's IP and HA answers 400.
+
+## Image upgrades
+
+Pin a chart's image tag in its HelmChart manifest (`valuesContent.imageTag` in
+`manifests/helm-controller-charts/`), not in `helm/<chart>/values.yaml`. An upgrade is
+then a one-line manifest change plus `kubectl apply`, with no chart version bump or
+chart release. Only bump the chart (`version` in `Chart.yaml` and the manifest) when the
+templates change. A chart that hardcodes the tag in a template: move it to a value first.
