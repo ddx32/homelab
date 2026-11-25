@@ -12,7 +12,7 @@ on:
       - .github/workflows/prusa-connect-image.yaml
 
 env:
-  PRUSA_CONNECT_REF: v0.1.0-beta.1
+  PRUSA_CONNECT_REF: v0.1.0-beta.2
 
 jobs:
   build:
