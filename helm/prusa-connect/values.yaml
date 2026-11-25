@@ -1,7 +1,7 @@
 name: prusa-connect
-# Upstream publishes no image; .github/workflows/prusa-connect-image.yaml builds this one.
-image: ghcr.io/ddx32/prusa-connect
-imageTag: v0.1.0-beta.2
+# Upstream image; pin imageTag in manifests/helm-controller-charts/prusa-connect.yaml (no "v" prefix).
+image: ghcr.io/prusa3d/prusa-connect
+imageTag: 0.1.0-beta.2
 port: 8080
 # LoadBalancer: printers reach the server directly over the LAN (servicelb, both node IPs).
 serviceType: LoadBalancer

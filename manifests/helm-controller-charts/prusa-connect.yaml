@@ -27,7 +27,7 @@ spec:
   repo: https://ddx32.github.io/homelab
   chart: prusa-connect
   targetNamespace: homelab-services
-  version: 0.1.2
+  version: 0.1.3
   valuesContent: |-
-    imageTag: v0.1.0-beta.2
+    imageTag: 0.1.0-beta.2
     host: connect.jehli.net
