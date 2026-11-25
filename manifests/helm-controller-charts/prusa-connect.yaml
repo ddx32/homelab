@@ -1,8 +1,10 @@
 # Prusa Connect — web UI public at https://connect.jehli.net (cloudflare-tunnel). Printers use
 # the LAN LoadBalancer instead, http://<node IP>:8080 (servicelb answers on 10.0.40.102 and .104).
 #
-# State (authz.db, resource overlay, print files) is on the NAS at /export/ssd-data/prusa-connect,
-# owned by 10001:10001, the image's user.
+# Print files are on the NAS at /export/ssd-data/prusa-connect, owned by 10001:10001, the image's
+# user. config.d (the SQLite databases) is a local-path volume on kube-worker mounted over
+# /data/config.d; the NFS config.d is the stale pre-move copy, used only to seed an empty volume.
+# The share root needs "other::--x" in its ACL, or runc (root, squashed) can't make that mountpoint.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
